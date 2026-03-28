@@ -453,7 +453,7 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Si ya está logueado, ir directo a la app
 db.auth.getSession().then(({ data: { session } }) => {
-  if (session) window.location.href = 'app.html';
+  if (session) window.location.href = 'home.html';
 });
 
 function switchTab(tab) {
@@ -470,7 +470,7 @@ function switchTab(tab) {
 async function loginGoogle() {
   const { error } = await db.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin + '/app.html' }
+    options: { redirectTo: window.location.origin + '/home.html' }
   });
   if (error) showAlert('error', '❌ Error al conectar con Google');
 }
@@ -490,7 +490,7 @@ async function doLogin() {
     btn.innerHTML = 'Entrar';
     btn.disabled = false;
   } else {
-    window.location.href = 'app.html';
+    window.location.href = 'home.html';
   }
 }
 
@@ -521,7 +521,7 @@ async function doRegistro() {
 
   if (data.user) {
     await db.from('profiles').upsert({ id: data.user.id, nombre, zona, email });
-    window.location.href = 'app.html';
+    window.location.href = 'home.html';
   }
 }
 
