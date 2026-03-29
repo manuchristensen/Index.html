@@ -202,7 +202,7 @@ body { font-family: 'Nunito', sans-serif; background: var(--fondo); color: var(-
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmY3F2eHJ6bG92ZWdnbnR3Z2llIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2NDQxMjcsImV4cCI6MjA5MDIyMDEyN30.LiKYSuce1HorUFa8c_lND0z1y9LV9fFOzUWOTZtBOTU'
   );
   const { data: { session } } = await db.auth.getSession();
-  if (session) window.location.replace('home.html');
+  if (session) window.location.replace('pages/home.html');
 })();
 </script>
 </head>
