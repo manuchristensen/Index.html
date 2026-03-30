@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChambaYa — Perfil</title>
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../styles.css">
+<style>
+.perfil-wrap{max-width:900px;margin:0 auto;padding:36px 32px 80px;display:grid;grid-template-columns:260px 1fr;gap:24px;align-items:start}
+
+/* SIDEBAR */
+.perfil-sidebar{display:flex;flex-direction:column;gap:14px}
+.perfil-card{background:var(--blanco);border-radius:var(--radio-lg);border:1.5px solid var(--borde);padding:28px;text-align:center;box-shadow:var(--sombra)}
+
+/* AVATAR */
+.perf-av-wrap{position:relative;display:inline-block;margin-bottom:14px;cursor:pointer}
+.perf-av{width:96px;height:96px;border-radius:50%;background:var(--fondo);border:3px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:900;color:var(--suave);overflow:hidden;margin:0 auto;transition:border-color .2s}
+.perf-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.perf-av-overlay{
+  position:absolute;inset:0;border-radius:50%;
+  background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;pointer-events:none;
+}
+.perf-av-wrap:hover .perf-av{border-color:var(--verde)}
+.perf-av-wrap.editable:hover .perf-av-overlay{opacity:1}
+.perf-av-overlay-txt{color:#fff;font-size:.7rem;font-weight:900;text-align:center;line-height:1.3}
+.perf-av-badge{
+  position:absolute;bottom:2px;right:2px;
+  width:26px;height:26px;background:var(--verde);border:2px solid #fff;
+  border-radius:50%;display:none;align-items:center;justify-content:center;font-size:.75rem;
+}
+.perf-av-wrap.editable .perf-av-badge{display:flex}
+#file-avatar{display:none}
+
+/* NOMBRE */
+.perf-nombre-wrap{position:relative;margin-bottom:4px}
+.perf-nombre{font-size:1.2rem;font-weight:900;color:var(--texto);cursor:default}
+.perf-nombre.editable{cursor:pointer}
+.perf-nombre.editable:hover{color:var(--verde-o)}
+.perf-nombre-input{
+  font-size:1.1rem;font-weight:900;color:var(--texto);text-align:center;
+  border:2px solid var(--verde);border-radius:var(--radio);padding:6px 10px;
+  font-family:'Nunito',sans-serif;outline:none;width:100%;background:var(--blanco);
+  box-shadow:0 0 0 3px rgba(0,201,107,.1);
+}
+.perf-nombre-edit-btns{display:flex;gap:6px;justify-content:center;margin-top:6px}
+.btn-nombre-ok{padding:5px 14px;border:none;border-radius:var(--radio-pill);background:var(--verde);color:#fff;font-family:'Nunito',sans-serif;font-weight:900;font-size:.78rem;cursor:pointer}
+.btn-nombre-cancel{padding:5px 12px;border:1.5px solid var(--borde);border-radius:var(--radio-pill);background:var(--blanco);color:var(--suave);font-family:'Nunito',sans-serif;font-weight:800;font-size:.78rem;cursor:pointer}
+
+.perf-ocupacion-mini{font-size:.82rem;font-weight:800;color:var(--suave);margin-bottom:10px}
+.perf-zona{display:inline-flex;align-items:center;gap:5px;font-size:.8rem;font-weight:800;color:var(--suave);margin-bottom:16px}
+
+/* STATS */
+.perf-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.perf-stat{background:var(--fondo);border-radius:var(--radio);padding:10px;text-align:center}
+.perf-stat-num{font-size:1.2rem;font-weight:900;color:var(--texto)}
+.perf-stat-lbl{font-size:.66rem;font-weight:800;color:var(--suave);text-transform:uppercase;letter-spacing:.4px}
+
+.btn-editar-perfil{width:100%;padding:10px;border:2px solid var(--verde);border-radius:var(--radio-pill);background:transparent;font-family:'Nunito',sans-serif;font-weight:900;font-size:.88rem;cursor:pointer;color:var(--verde-o);transition:all .2s}
+.btn-editar-perfil:hover{background:var(--verde-c)}
+.btn-contactar{width:100%;padding:11px;border:none;border-radius:var(--radio-pill);background:var(--verde);font-family:'Nunito',sans-serif;font-weight:900;font-size:.88rem;cursor:pointer;color:#fff;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-contactar:hover{background:var(--verde-o);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,196,107,.3)}
+
+/* MAIN */
+.perfil-main{display:flex;flex-direction:column;gap:14px}
+.sec-card{background:var(--blanco);border-radius:var(--radio-lg);border:1.5px solid var(--borde);padding:24px;box-shadow:var(--sombra)}
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sec-titulo{font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--suave)}
+.btn-sec-edit{padding:6px 14px;border:1.5px solid var(--borde);border-radius:var(--radio-pill);background:var(--blanco);font-family:'Nunito',sans-serif;font-weight:800;font-size:.76rem;cursor:pointer;color:var(--suave);transition:all .2s}
+.btn-sec-edit:hover{border-color:var(--verde);color:var(--verde-o)}
+
+/* BIO */
+.perf-bio{font-size:.9rem;font-weight:700;color:var(--texto);line-height:1.7}
+.perf-bio-empty{font-size:.86rem;font-weight:700;color:var(--suave);font-style:italic}
+.bio-textarea{width:100%;background:var(--fondo);border:2px solid var(--borde);border-radius:var(--radio);padding:12px 14px;font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:700;color:var(--texto);outline:none;resize:none;min-height:88px;transition:border-color .2s}
+.bio-textarea:focus{border-color:var(--verde);box-shadow:0 0 0 3px rgba(0,201,107,.1)}
+
+/* CHIPS — estilo aesthetic sin íconos */
+.chips-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.chip{
+  padding:7px 16px;border:1.5px solid var(--borde);border-radius:var(--radio-pill);
+  background:var(--blanco);font-family:'Nunito',sans-serif;font-size:.82rem;
+  font-weight:800;color:var(--suave);cursor:pointer;transition:all .18s;
+  user-select:none;line-height:1;
+}
+.chip:hover{border-color:var(--verde);color:var(--verde-o);background:var(--verde-c)}
+.chip.sel{border-color:var(--verde);color:var(--verde-o);background:var(--verde-c)}
+.chip.readonly{cursor:default}
+.chip.readonly:hover{border-color:var(--borde);color:var(--suave);background:var(--blanco)}
+.chip.sel.readonly{border-color:var(--verde);color:var(--verde-o);background:var(--verde-c)}
+
+/* Campo agregar custom */
+.agregar-custom{display:flex;gap:8px;align-items:center;margin-top:4px}
+.custom-input{
+  flex:1;border:1.5px solid var(--borde);border-radius:var(--radio-pill);
+  padding:7px 14px;font-family:'Nunito',sans-serif;font-size:.82rem;
+  font-weight:700;color:var(--texto);outline:none;transition:border-color .2s;
+  background:var(--fondo);
+}
+.custom-input:focus{border-color:var(--verde);background:var(--blanco)}
+.custom-input::placeholder{color:#CBD5E1}
+.btn-agregar-custom{
+  padding:7px 14px;border:none;border-radius:var(--radio-pill);background:var(--verde);
+  color:#fff;font-family:'Nunito',sans-serif;font-weight:900;font-size:.78rem;
+  cursor:pointer;white-space:nowrap;transition:background .2s;
+}
+.btn-agregar-custom:hover{background:var(--verde-o)}
+.custom-hint{font-size:.7rem;font-weight:700;color:var(--suave);margin-top:4px}
+
+/* Botones guardar/cancelar */
+.edit-btns{display:flex;gap:10px;margin-top:12px}
+.btn-save{padding:9px 22px;border:none;border-radius:var(--radio-pill);background:var(--verde);font-family:'Nunito',sans-serif;font-weight:900;font-size:.86rem;cursor:pointer;color:#fff;transition:all .2s}
+.btn-save:hover{background:var(--verde-o)}
+.btn-save:disabled{opacity:.5;cursor:not-allowed}
+.btn-cancel-edit{padding:9px 18px;border:1.5px solid var(--borde);border-radius:var(--radio-pill);background:var(--blanco);font-family:'Nunito',sans-serif;font-weight:800;font-size:.86rem;cursor:pointer;color:var(--suave);transition:all .2s}
+.btn-cancel-edit:hover{border-color:var(--texto);color:var(--texto)}
+
+/* Reviews */
+.reviews-empty{text-align:center;padding:22px;color:var(--suave)}
+
+@media(max-width:740px){.perfil-wrap{grid-template-columns:1fr;padding:20px 16px 60px}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="home.html" class="nav-logo">Chamba<em>Ya</em></a>
+  <a href="publicar.html" class="nav-publicar" style="margin-left:32px">Publicar tarea</a>
+  <div class="nav-links">
+    <a href="explorar.html" class="nav-link">Explorar tareas</a>
+    <a href="mistareas.html" class="nav-link">Mis tareas</a>
+  </div>
+  <div class="nav-right">
+    <a href="ayuda.html" class="nav-right-link">Ayuda</a>
+    <a href="notificaciones.html" class="nav-right-link">Notificaciones</a>
+    <a href="mensajes.html" class="nav-right-link">Mensajes</a>
+    <div class="nav-av-wrap">
+      <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <div class="dd-header"><div class="dd-nombre" id="dd-nombre">Cargando...</div><div class="dd-sub" onclick="window.location.href='perfil.html?id='+miUserId">Ver perfil público</div></div>
+        <a href="mistareas.html" class="dd-item">Mis tareas <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <a href="configuracion.html" class="dd-item">Configuración <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <div class="dd-item rojo" onclick="cerrarSesion()">Cerrar sesión</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="perfil-wrap">
+
+  <!-- SIDEBAR -->
+  <div class="perfil-sidebar">
+    <div class="perfil-card">
+
+      <!-- AVATAR -->
+      <div class="perf-av-wrap" id="av-wrap" onclick="clickAvatar()">
+        <div class="perf-av" id="perf-av">?</div>
+        <div class="perf-av-overlay">
+          <div class="perf-av-overlay-txt">Cambiar<br>foto</div>
+        </div>
+        <div class="perf-av-badge">📷</div>
+      </div>
+      <input type="file" id="file-avatar" accept="image/jpeg,image/png,image/webp" onchange="onFotoSeleccionada(this)">
+
+      <!-- NOMBRE -->
+      <div class="perf-nombre-wrap" id="nombre-wrap">
+        <div class="perf-nombre" id="perf-nombre" onclick="editarNombre()">Cargando...</div>
+        <input type="text" class="perf-nombre-input" id="nombre-input" style="display:none" maxlength="40" placeholder="Tu nombre completo">
+        <div class="perf-nombre-edit-btns" id="nombre-btns" style="display:none">
+          <button class="btn-nombre-ok" onclick="guardarNombre()">✓ Guardar</button>
+          <button class="btn-nombre-cancel" onclick="cancelarNombre()">✕</button>
+        </div>
+      </div>
+
+      <div class="perf-ocupacion-mini" id="perf-ocupacion-mini">Miembro de ChambaYa</div>
+      <div class="perf-zona" id="perf-zona">📍 Argentina</div>
+
+      <div class="perf-stats">
+        <div class="perf-stat"><div class="perf-stat-num" id="stat-tareas">0</div><div class="perf-stat-lbl">Tareas</div></div>
+        <div class="perf-stat"><div class="perf-stat-num" id="stat-rating">—</div><div class="perf-stat-lbl">Rating</div></div>
+      </div>
+
+      <div id="perf-botones"></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="perfil-main">
+
+    <!-- SOBRE MÍ -->
+    <div class="sec-card">
+      <div class="sec-header">
+        <div class="sec-titulo">Sobre mí</div>
+        <button class="btn-sec-edit" id="btn-edit-bio" style="display:none" onclick="editarBio()">✏️ Editar</button>
+      </div>
+      <div id="bio-vista">
+        <div class="perf-bio" id="perf-bio-txt" style="display:none"></div>
+        <div class="perf-bio-empty" id="perf-bio-empty">Contá brevemente quién sos y qué podés hacer.</div>
+      </div>
+      <div id="bio-edit" style="display:none">
+        <textarea class="bio-textarea" id="bio-input" placeholder="Ej: Plomero con 10 años de experiencia en CABA. Trabajo rápido y prolijo..." maxlength="400"></textarea>
+        <div style="font-size:.72rem;color:var(--suave);font-weight:700;text-align:right;margin-top:4px">
+          <span id="bio-count">0</span>/400
+        </div>
+        <div class="edit-btns">
+          <button class="btn-save" onclick="guardarBio()">💾 Guardar</button>
+          <button class="btn-cancel-edit" onclick="cancelarBio()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- A QUÉ ME DEDICO (multi-select, sin íconos) -->
+    <div class="sec-card">
+      <div class="sec-header">
+        <div class="sec-titulo">¿A qué me dedico?</div>
+        <button class="btn-sec-edit" id="btn-edit-ocup" style="display:none" onclick="editarOcup()">✏️ Editar</button>
+      </div>
+      <div id="ocup-vista">
+        <div class="chips-wrap" id="ocup-chips-vista"></div>
+        <div class="perf-bio-empty" id="ocup-empty">No especificado.</div>
+      </div>
+      <div id="ocup-edit" style="display:none">
+        <div class="chips-wrap" id="ocup-chips-edit"></div>
+        <div class="agregar-custom">
+          <input class="custom-input" id="ocup-custom-input" placeholder="Otro (máx 20 chars)" maxlength="20">
+          <button class="btn-agregar-custom" onclick="agregarCustomOcup()">+ Agregar</button>
+        </div>
+        <div class="custom-hint">Podés seleccionar varias o agregar una personalizada</div>
+        <div class="edit-btns">
+          <button class="btn-save" onclick="guardarOcup()">💾 Guardar</button>
+          <button class="btn-cancel-edit" onclick="cancelarOcup()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESPECIALIDADES -->
+    <div class="sec-card">
+      <div class="sec-header">
+        <div class="sec-titulo">Especialidades</div>
+        <button class="btn-sec-edit" id="btn-edit-esp" style="display:none" onclick="editarEsp()">✏️ Editar</button>
+      </div>
+      <div id="esp-vista">
+        <div class="chips-wrap" id="esp-chips-vista"></div>
+        <div class="perf-bio-empty" id="esp-empty">Sin especialidades.</div>
+      </div>
+      <div id="esp-edit" style="display:none">
+        <div class="chips-wrap" id="esp-chips-edit"></div>
+        <div class="agregar-custom">
+          <input class="custom-input" id="esp-custom-input" placeholder="Otra (máx 20 chars)" maxlength="20">
+          <button class="btn-agregar-custom" onclick="agregarCustomEsp()">+ Agregar</button>
+        </div>
+        <div class="custom-hint">Seleccioná las que aplican o agregá una propia</div>
+        <div class="edit-btns">
+          <button class="btn-save" onclick="guardarEsp()">💾 Guardar</button>
+          <button class="btn-cancel-edit" onclick="cancelarEsp()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- IDIOMAS -->
+    <div class="sec-card">
+      <div class="sec-header">
+        <div class="sec-titulo">Idiomas</div>
+        <button class="btn-sec-edit" id="btn-edit-idiomas" style="display:none" onclick="editarIdiomas()">✏️ Editar</button>
+      </div>
+      <div id="idiomas-vista">
+        <div class="chips-wrap" id="idiomas-chips-vista"></div>
+        <div class="perf-bio-empty" id="idiomas-empty">Sin idiomas especificados.</div>
+      </div>
+      <div id="idiomas-edit" style="display:none">
+        <div class="chips-wrap" id="idiomas-chips-edit"></div>
+        <div class="edit-btns">
+          <button class="btn-save" onclick="guardarIdiomas()">💾 Guardar</button>
+          <button class="btn-cancel-edit" onclick="cancelarIdiomas()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="sec-card">
+      <div class="sec-header"><div class="sec-titulo">Reseñas</div></div>
+      <div class="reviews-empty">
+        <div style="font-size:1.6rem;margin-bottom:10px">⭐</div>
+        <div style="font-size:.9rem;font-weight:800;color:var(--texto);margin-bottom:5px">Sin reseñas todavía</div>
+        <div style="font-size:.8rem;font-weight:700;color:var(--suave)">Las reseñas aparecen después de completar tareas.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../navbar.js"></script>
+<script>
+// db desde navbar.js
+const params = new URLSearchParams(window.location.search);
+let perfilId = params.get('id');
+let miUserId = null;
+let esMiPerfil = false;
+let perfilData = {};
+
+// ══ DATOS ══
+const OCUPACIONES = [
+  'Plomero/a','Electricista','Pintor/a','Limpieza','Jardinero/a','Carpintero/a',
+  'Mudanzas','Tecnología','Delivery/Mandados','Fotografía','Marketing','Gastronomía',
+  'Cuidado de niños','Cuidado de mascotas','Entrenador/a','Peluquería',
+  'Educación/Tutorías','Construcción','Mecánico/a','Diseño',
+];
+
+const ESPECIALIDADES = [
+  'Trabajos urgentes','Fines de semana','Disponibilidad 24h','Trabajo en altura',
+  'Con vehículo propio','Con herramientas','Con materiales','Factura A/B',
+  '+5 años experiencia','Trabajo en equipo','Solo/a','Zona CABA','Zona GBA',
+  'Todo el país','Trabajo remoto','Lun a Vie',
+];
+
+const IDIOMAS = ['🇦🇷 Español','🇺🇸 Inglés','🇧🇷 Portugués','🇫🇷 Francés','🇩🇪 Alemán','🇮🇹 Italiano','🇨🇳 Chino','🇷🇺 Ruso','🌐 Otro'];
+
+// Temporales de edición
+let ocupSelTemp = [];
+let espSelTemp = [];
+let idiomasSelTemp = [];
+
+// ══ INIT ══
+(async () => {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.replace('login.html'); return; }
+  miUserId = session.user.id;
+  if (!perfilId) perfilId = miUserId;
+  esMiPerfil = perfilId === miUserId;
+
+  await cargarPerfil(session.user);
+  await cargarStats();
+  mostrarBotones();
+  if (esMiPerfil) activarEdicion();
+})();
+
+// ══ CARGAR PERFIL ══
+async function cargarPerfil(authUser) {
+  try {
+    const { data: p } = await db.from('profiles').select('*').eq('id', perfilId).maybeSingle();
+
+    if (!p && esMiPerfil) {
+      // Primer acceso: crear perfil usando datos de Google/auth
+      const nombre = authUser?.user_metadata?.nombre
+        || authUser?.user_metadata?.full_name
+        || authUser?.email?.split('@')[0]
+        || 'Usuario';
+      const avatar = authUser?.user_metadata?.avatar_url
+        || authUser?.user_metadata?.picture
+        || null;
+      const zona = authUser?.user_metadata?.zona || null;
+
+      const { data: nuevo } = await db.from('profiles').insert({
+        id: miUserId, nombre, email: authUser?.email,
+        avatar_url: avatar, zona
+      }).select().single();
+
+      perfilData = nuevo || { nombre, avatar_url: avatar };
+    } else {
+      // Si es mi perfil y hay datos de Google más recientes, sincronizarlos
+      if (p && esMiPerfil && authUser) {
+        const googleNombre = authUser.user_metadata?.full_name || authUser.user_metadata?.nombre;
+        const googleFoto = authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture;
+
+        // Solo sincronizar foto de Google si no hay foto propia ya guardada diferente
+        const updates = {};
+        if (!p.avatar_url && googleFoto) updates.avatar_url = googleFoto;
+        // Sincronizar nombre solo si el perfil tiene el default 'Usuario'
+        if ((!p.nombre || p.nombre === 'Usuario') && googleNombre) updates.nombre = googleNombre;
+
+        if (Object.keys(updates).length > 0) {
+          await db.from('profiles').update(updates).eq('id', miUserId);
+          perfilData = { ...p, ...updates };
+        } else {
+          perfilData = p;
+        }
+      } else {
+        perfilData = p || {};
+      }
+    }
+
+    renderPerfil(perfilData);
+  } catch(e) { console.error('Error perfil:', e); }
+}
+
+// ══ RENDER ══
+function renderPerfil(p) {
+  if (!p) return;
+  const nombre = p.nombre || 'Usuario';
+  document.title = 'ChambaYa — ' + nombre;
+
+  // Nombre
+  document.getElementById('perf-nombre').textContent = nombre;
+  // Ocupación mini
+  const ocups = p.ocupaciones || (p.ocupacion ? [p.ocupacion] : []);
+  document.getElementById('perf-ocupacion-mini').textContent = ocups.length ? ocups.slice(0,2).join(' · ') : 'Miembro de ChambaYa';
+  // Zona
+  document.getElementById('perf-zona').innerHTML = '📍 ' + (p.zona || 'Argentina');
+
+  // Avatar
+  const avEl = document.getElementById('perf-av');
+  const foto = p.avatar_url;
+  if (foto) { avEl.innerHTML = `<img src="${foto}" alt="${nombre}">`; }
+  else { avEl.textContent = nombre.charAt(0).toUpperCase(); }
+
+  // Bio
+  if (p.bio) {
+    document.getElementById('perf-bio-txt').textContent = p.bio;
+    document.getElementById('perf-bio-txt').style.display = 'block';
+    document.getElementById('perf-bio-empty').style.display = 'none';
+  }
+
+  // Ocupaciones (array)
+  const ocupArr = p.ocupaciones || (p.ocupacion ? [p.ocupacion] : []);
+  renderChipsVista('ocup-chips-vista','ocup-empty', ocupArr);
+
+  // Especialidades
+  renderChipsVista('esp-chips-vista','esp-empty', p.especialidades || []);
+
+  // Idiomas
+  renderChipsVista('idiomas-chips-vista','idiomas-empty', p.idiomas || []);
+}
+
+function renderChipsVista(containerId, emptyId, items) {
+  const cont = document.getElementById(containerId);
+  const emptyEl = document.getElementById(emptyId);
+  if (!items || !items.length) {
+    cont.innerHTML = ''; emptyEl.style.display = 'block'; return;
+  }
+  emptyEl.style.display = 'none';
+  cont.innerHTML = items.map(i => `<div class="chip sel readonly">${escH(i)}</div>`).join('');
+}
+
+async function cargarStats() {
+  try {
+    const { count } = await db.from('tareas').select('*',{count:'exact',head:true}).eq('user_id', perfilId);
+    document.getElementById('stat-tareas').textContent = count || 0;
+  } catch(e) {}
+}
+
+function mostrarBotones() {
+  const wrap = document.getElementById('perf-botones');
+  if (esMiPerfil) {
+    wrap.innerHTML = `<button class="btn-editar-perfil" onclick="editarBio()">✏️ Editar perfil</button>`;
+  } else {
+    wrap.innerHTML = `<button class="btn-contactar" onclick="showToast('Mensajes disponibles próximamente')">💬 Contactar</button>`;
+  }
+}
+
+function activarEdicion() {
+  ['btn-edit-bio','btn-edit-ocup','btn-edit-esp','btn-edit-idiomas'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'block';
+  });
+  document.getElementById('av-wrap').classList.add('editable');
+  document.getElementById('perf-nombre').classList.add('editable');
+}
+
+// ══ AVATAR ══
+function clickAvatar() {
+  if (!esMiPerfil) return;
+  document.getElementById('file-avatar').click();
+}
+
+async function onFotoSeleccionada(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { showToast('La imagen debe ser menor a 2MB'); return; }
+
+  showToast('Subiendo foto...');
+  try {
+    // Convertir a base64 y guardar como data URL en el perfil
+    // (sin storage de Supabase — guardamos en avatar_url como URL o usamos un servicio)
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = e.target.result;
+      // Para producción usarías Supabase Storage. Por ahora guardamos la URL de datos
+      const avEl = document.getElementById('perf-av');
+      avEl.innerHTML = `<img src="${dataUrl}" alt="Foto">`;
+      perfilData.avatar_url = dataUrl;
+      await guardarCampo({ avatar_url: dataUrl });
+    };
+    reader.readAsDataURL(file);
+  } catch(e) {
+    showToast('Error al subir foto: ' + e.message);
+  }
+  input.value = '';
+}
+
+// ══ NOMBRE ══
+function editarNombre() {
+  if (!esMiPerfil) return;
+  const nomEl = document.getElementById('perf-nombre');
+  const inp = document.getElementById('nombre-input');
+  const btns = document.getElementById('nombre-btns');
+  nomEl.style.display = 'none';
+  inp.value = perfilData.nombre || '';
+  inp.style.display = 'block';
+  btns.style.display = 'flex';
+  inp.focus(); inp.select();
+}
+
+function cancelarNombre() {
+  document.getElementById('perf-nombre').style.display = 'block';
+  document.getElementById('nombre-input').style.display = 'none';
+  document.getElementById('nombre-btns').style.display = 'none';
+}
+
+async function guardarNombre() {
+  const val = document.getElementById('nombre-input').value.trim();
+  if (!val || val.length < 2) { showToast('El nombre debe tener al menos 2 caracteres'); return; }
+  await guardarCampo({ nombre: val });
+  perfilData.nombre = val;
+  document.getElementById('perf-nombre').textContent = val;
+  cancelarNombre();
+}
+
+// ══ BIO ══
+function editarBio() {
+  document.getElementById('bio-vista').style.display = 'none';
+  document.getElementById('bio-edit').style.display = 'block';
+  document.getElementById('btn-edit-bio').style.display = 'none';
+  const txt = perfilData.bio || '';
+  document.getElementById('bio-input').value = txt;
+  document.getElementById('bio-count').textContent = txt.length;
+  document.getElementById('bio-input').oninput = function() {
+    document.getElementById('bio-count').textContent = this.value.length;
+  };
+}
+function cancelarBio() {
+  document.getElementById('bio-vista').style.display = 'block';
+  document.getElementById('bio-edit').style.display = 'none';
+  document.getElementById('btn-edit-bio').style.display = 'block';
+}
+async function guardarBio() {
+  const bio = document.getElementById('bio-input').value.trim();
+  await guardarCampo({ bio });
+  perfilData.bio = bio;
+  if (bio) {
+    document.getElementById('perf-bio-txt').textContent = bio;
+    document.getElementById('perf-bio-txt').style.display = 'block';
+    document.getElementById('perf-bio-empty').style.display = 'none';
+  } else {
+    document.getElementById('perf-bio-txt').style.display = 'none';
+    document.getElementById('perf-bio-empty').style.display = 'block';
+  }
+  cancelarBio();
+}
+
+// ══ OCUPACIONES (multi-select sin íconos) ══
+function editarOcup() {
+  document.getElementById('ocup-vista').style.display = 'none';
+  document.getElementById('ocup-edit').style.display = 'block';
+  document.getElementById('btn-edit-ocup').style.display = 'none';
+
+  // Migrar de string a array si viene de versión anterior
+  const prev = perfilData.ocupaciones || (perfilData.ocupacion ? [perfilData.ocupacion] : []);
+  ocupSelTemp = [...prev];
+
+  renderChipsEdit('ocup-chips-edit', OCUPACIONES, ocupSelTemp, toggleOcup);
+}
+
+function toggleOcup(val) {
+  if (ocupSelTemp.includes(val)) { ocupSelTemp = ocupSelTemp.filter(v=>v!==val); }
+  else { ocupSelTemp.push(val); }
+  actualizarChipsEdit('ocup-chips-edit', OCUPACIONES, ocupSelTemp, toggleOcup, ocupSelTemp.filter(v=>!OCUPACIONES.includes(v)));
+}
+
+function agregarCustomOcup() {
+  const inp = document.getElementById('ocup-custom-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  if (val.length > 20) { showToast('Máximo 20 caracteres'); return; }
+  if (ocupSelTemp.includes(val)) { showToast('Ya está en la lista'); return; }
+  ocupSelTemp.push(val);
+  inp.value = '';
+  actualizarChipsEdit('ocup-chips-edit', OCUPACIONES, ocupSelTemp, toggleOcup, ocupSelTemp.filter(v=>!OCUPACIONES.includes(v)));
+}
+
+function cancelarOcup() {
+  document.getElementById('ocup-vista').style.display = 'block';
+  document.getElementById('ocup-edit').style.display = 'none';
+  document.getElementById('btn-edit-ocup').style.display = 'block';
+}
+
+async function guardarOcup() {
+  await guardarCampo({ ocupaciones: ocupSelTemp, ocupacion: ocupSelTemp[0]||null });
+  perfilData.ocupaciones = ocupSelTemp;
+  perfilData.ocupacion = ocupSelTemp[0]||null;
+  document.getElementById('perf-ocupacion-mini').textContent = ocupSelTemp.length ? ocupSelTemp.slice(0,2).join(' · ') : 'Miembro de ChambaYa';
+  renderChipsVista('ocup-chips-vista','ocup-empty', ocupSelTemp);
+  cancelarOcup();
+}
+
+// ══ ESPECIALIDADES ══
+function editarEsp() {
+  document.getElementById('esp-vista').style.display = 'none';
+  document.getElementById('esp-edit').style.display = 'block';
+  document.getElementById('btn-edit-esp').style.display = 'none';
+  espSelTemp = [...(perfilData.especialidades||[])];
+  renderChipsEdit('esp-chips-edit', ESPECIALIDADES, espSelTemp, toggleEsp);
+}
+
+function toggleEsp(val) {
+  if (espSelTemp.includes(val)) { espSelTemp = espSelTemp.filter(v=>v!==val); }
+  else { espSelTemp.push(val); }
+  actualizarChipsEdit('esp-chips-edit', ESPECIALIDADES, espSelTemp, toggleEsp, espSelTemp.filter(v=>!ESPECIALIDADES.includes(v)));
+}
+
+function agregarCustomEsp() {
+  const inp = document.getElementById('esp-custom-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  if (val.length > 20) { showToast('Máximo 20 caracteres'); return; }
+  if (espSelTemp.includes(val)) { showToast('Ya está en la lista'); return; }
+  espSelTemp.push(val);
+  inp.value = '';
+  actualizarChipsEdit('esp-chips-edit', ESPECIALIDADES, espSelTemp, toggleEsp, espSelTemp.filter(v=>!ESPECIALIDADES.includes(v)));
+}
+
+function cancelarEsp() {
+  document.getElementById('esp-vista').style.display = 'block';
+  document.getElementById('esp-edit').style.display = 'none';
+  document.getElementById('btn-edit-esp').style.display = 'block';
+}
+
+async function guardarEsp() {
+  await guardarCampo({ especialidades: espSelTemp });
+  perfilData.especialidades = espSelTemp;
+  renderChipsVista('esp-chips-vista','esp-empty', espSelTemp);
+  cancelarEsp();
+}
+
+// ══ IDIOMAS ══
+function editarIdiomas() {
+  document.getElementById('idiomas-vista').style.display = 'none';
+  document.getElementById('idiomas-edit').style.display = 'block';
+  document.getElementById('btn-edit-idiomas').style.display = 'none';
+  idiomasSelTemp = [...(perfilData.idiomas||[])];
+  renderChipsEdit('idiomas-chips-edit', IDIOMAS, idiomasSelTemp, toggleIdioma);
+}
+
+function toggleIdioma(val) {
+  if (idiomasSelTemp.includes(val)) { idiomasSelTemp = idiomasSelTemp.filter(v=>v!==val); }
+  else { idiomasSelTemp.push(val); }
+  actualizarChipsEdit('idiomas-chips-edit', IDIOMAS, idiomasSelTemp, toggleIdioma);
+}
+
+function cancelarIdiomas() {
+  document.getElementById('idiomas-vista').style.display = 'block';
+  document.getElementById('idiomas-edit').style.display = 'none';
+  document.getElementById('btn-edit-idiomas').style.display = 'block';
+}
+
+async function guardarIdiomas() {
+  await guardarCampo({ idiomas: idiomasSelTemp });
+  perfilData.idiomas = idiomasSelTemp;
+  renderChipsVista('idiomas-chips-vista','idiomas-empty', idiomasSelTemp);
+  cancelarIdiomas();
+}
+
+// ══ HELPERS CHIPS EDIT ══
+function renderChipsEdit(containerId, opciones, seleccionados, toggleFn, customItems) {
+  const cont = document.getElementById(containerId);
+  if (!cont) return;
+  const todosChips = [...opciones, ...(customItems||[]).filter(c=>!opciones.includes(c))];
+  cont.innerHTML = todosChips.map(op =>
+    `<div class="chip${seleccionados.includes(op)?' sel':''}" onclick="${toggleFn.name}(${JSON.stringify(op)})">${escH(op)}</div>`
+  ).join('');
+}
+
+function actualizarChipsEdit(containerId, opciones, seleccionados, toggleFn, customItems) {
+  renderChipsEdit(containerId, opciones, seleccionados, toggleFn, customItems);
+}
+
+// ══ GUARDAR ══
+async function guardarCampo(campos) {
+  try {
+    const { error } = await db.from('profiles').upsert({ id: miUserId, ...campos, updated_at: new Date().toISOString() });
+    if (error) throw error;
+    showToast('✅ Guardado');
+  } catch(e) { showToast('❌ Error: ' + e.message); }
+}
+
+// ══ UTILS ══
+function escH(t){if(!t)return'';const d=document.createElement('div');d.textContent=String(t);return d.innerHTML;}
+
+// Guardar nombre con Enter
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('nombre-input');
+  if (inp) inp.addEventListener('keydown', e => { if(e.key==='Enter') guardarNombre(); if(e.key==='Escape') cancelarNombre(); });
+});
+</script>
+</body>
+</html>
