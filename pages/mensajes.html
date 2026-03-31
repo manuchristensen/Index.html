@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChambaYa — Mensajes</title>
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../styles.css">
+<style>
+/* ── LAYOUT ── */
+.msg-wrap{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 66px);overflow:hidden}
+
+/* ── SIDEBAR CONVERSACIONES ── */
+.msg-sidebar{border-right:1.5px solid var(--borde);background:var(--blanco);display:flex;flex-direction:column;overflow:hidden}
+.msg-sidebar-head{padding:20px 20px 14px;border-bottom:1.5px solid var(--borde);flex-shrink:0}
+.msg-sidebar-titulo{font-size:1.1rem;font-weight:900;margin-bottom:12px}
+.msg-search-wrap{position:relative}
+.msg-search-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--suave);font-size:.85rem}
+.msg-search{width:100%;background:var(--fondo);border:1.5px solid var(--borde);border-radius:var(--radio-pill);padding:9px 12px 9px 32px;font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:700;color:var(--texto);outline:none;transition:border-color .2s}
+.msg-search:focus{border-color:var(--verde);background:var(--blanco)}
+.msg-search::placeholder{color:#CBD5E1}
+
+.conv-lista{flex:1;overflow-y:auto}
+.conv-lista::-webkit-scrollbar{width:3px}
+.conv-lista::-webkit-scrollbar-thumb{background:var(--borde);border-radius:4px}
+
+.conv-item{display:flex;align-items:center;gap:12px;padding:14px 20px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--borde);text-decoration:none}
+.conv-item:hover{background:var(--fondo)}
+.conv-item.activa{background:var(--verde-c);border-right:3px solid var(--verde)}
+.conv-av{width:44px;height:44px;border-radius:50%;background:var(--fondo);border:2px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:900;color:var(--suave);flex-shrink:0;overflow:hidden}
+.conv-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.conv-info{flex:1;min-width:0}
+.conv-nombre{font-size:.9rem;font-weight:900;color:var(--texto);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv-tarea{font-size:.72rem;font-weight:800;color:var(--suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.conv-preview{font-size:.75rem;font-weight:700;color:var(--suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+.conv-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.conv-hora{font-size:.65rem;font-weight:700;color:var(--suave)}
+.conv-badge{background:var(--verde);color:#fff;font-size:.62rem;font-weight:900;border-radius:99px;padding:2px 7px;min-width:18px;text-align:center}
+
+.conv-empty{padding:48px 24px;text-align:center;color:var(--suave)}
+.conv-empty-ico{font-size:2.4rem;margin-bottom:12px}
+.conv-empty-txt{font-size:.88rem;font-weight:700;line-height:1.6}
+
+/* ── PANEL CHAT ── */
+.chat-panel{display:flex;flex-direction:column;background:var(--fondo);overflow:hidden}
+
+/* Header chat */
+.chat-header{background:var(--blanco);border-bottom:1.5px solid var(--borde);padding:14px 24px;display:flex;align-items:center;gap:14px;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.chat-header-av{width:40px;height:40px;border-radius:50%;background:var(--fondo);border:2px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:900;color:var(--suave);flex-shrink:0;overflow:hidden}
+.chat-header-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.chat-header-info{flex:1;min-width:0}
+.chat-header-nombre{font-size:.95rem;font-weight:900;color:var(--texto)}
+.chat-header-tarea{font-size:.75rem;font-weight:800;color:var(--suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-header-tarea a{color:var(--verde-o);text-decoration:none;font-weight:900}
+.chat-header-tarea a:hover{text-decoration:underline}
+.chat-estado{font-size:.7rem;font-weight:900;padding:3px 10px;border-radius:var(--radio-pill)}
+.chat-estado.en-curso{background:#FFF7ED;color:#C2410C}
+.chat-estado.terminada{background:var(--verde-c);color:var(--verde-o)}
+
+/* Mensajes */
+.chat-msgs{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:10px}
+.chat-msgs::-webkit-scrollbar{width:4px}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--borde);border-radius:4px}
+
+.msg-dia{text-align:center;font-size:.68rem;font-weight:900;color:var(--suave);text-transform:uppercase;letter-spacing:.6px;margin:8px 0}
+
+/* Burbuja */
+.msg-row{display:flex;align-items:flex-end;gap:8px}
+.msg-row.mio{flex-direction:row-reverse}
+.msg-bubble-av{width:28px;height:28px;border-radius:50%;background:var(--fondo);border:2px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:900;color:var(--suave);flex-shrink:0;overflow:hidden;align-self:flex-end}
+.msg-bubble-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.msg-bubble{max-width:68%;padding:10px 14px;border-radius:16px;font-size:.88rem;font-weight:700;color:var(--texto);line-height:1.5;word-break:break-word}
+.msg-row:not(.mio) .msg-bubble{background:var(--blanco);border-radius:4px 16px 16px 16px;border:1.5px solid var(--borde)}
+.msg-row.mio .msg-bubble{background:var(--verde);color:#fff;border-radius:16px 4px 16px 16px}
+.msg-hora{font-size:.62rem;font-weight:700;color:var(--suave);margin-top:3px;text-align:right}
+.msg-row.mio .msg-hora{color:rgba(255,255,255,.7)}
+
+/* Mensaje especial: dirección compartida */
+.msg-dir{background:linear-gradient(135deg,var(--verde-c),#d1fae5);border:1.5px solid var(--verde);border-radius:12px;padding:12px 14px;max-width:68%}
+.msg-dir-ico{font-size:1.1rem;margin-bottom:4px}
+.msg-dir-label{font-size:.68rem;font-weight:900;color:var(--verde-o);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.msg-dir-texto{font-size:.88rem;font-weight:900;color:var(--texto)}
+.msg-dir-hora{font-size:.62rem;font-weight:700;color:var(--suave);margin-top:4px}
+.msg-row.mio .msg-dir{background:linear-gradient(135deg,#065f46,#047857);border-color:#059669}
+.msg-row.mio .msg-dir-label{color:#6ee7b7}
+.msg-row.mio .msg-dir-texto{color:#fff}
+.msg-row.mio .msg-dir-hora{color:rgba(255,255,255,.6)}
+
+/* Sin conversación seleccionada */
+.chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--suave)}
+.chat-empty-ico{font-size:3.5rem;opacity:.4}
+.chat-empty-txt{font-size:.95rem;font-weight:700;opacity:.7}
+
+/* Footer input */
+.chat-footer{background:var(--blanco);border-top:1.5px solid var(--borde);padding:14px 20px;flex-shrink:0}
+.chat-footer-inner{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.chat-dir-btn{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--verde-c);border:1.5px dashed var(--verde);border-radius:var(--radio);cursor:pointer;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:900;color:var(--verde-o);transition:all .2s;width:fit-content}
+.chat-dir-btn:hover{background:var(--verde);color:#fff}
+.chat-input-row{display:flex;gap:10px;align-items:flex-end}
+.chat-input{flex:1;background:var(--fondo);border:2px solid var(--borde);border-radius:var(--radio-pill);padding:11px 18px;font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:700;color:var(--texto);outline:none;resize:none;min-height:44px;max-height:110px;transition:border-color .2s;line-height:1.4}
+.chat-input:focus{border-color:var(--verde);background:var(--blanco)}
+.chat-input::placeholder{color:#CBD5E1}
+.chat-send{width:44px;height:44px;border:none;border-radius:50%;background:var(--verde);color:#fff;font-size:1.1rem;cursor:pointer;flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.chat-send:hover{background:var(--verde-o);transform:scale(1.05)}
+.chat-send:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* Loading skeleton */
+.skel{background:linear-gradient(90deg,var(--borde) 25%,#f3f4f6 50%,var(--borde) 75%);background-size:200% 100%;animation:skel .9s infinite;border-radius:8px;height:16px}
+@keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+@media(max-width:700px){
+  .msg-wrap{grid-template-columns:1fr}
+  .msg-sidebar{display:none}
+  .msg-sidebar.show{display:flex;position:fixed;inset:66px 0 0 0;z-index:200;width:100%}
+}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="home.html" class="nav-logo">Chamba<em>Ya</em></a>
+  <a href="publicar.html" class="nav-publicar" style="margin-left:32px">Publicar tarea</a>
+  <div class="nav-links">
+    <a href="explorar.html" class="nav-link">Explorar tareas</a>
+    <a href="mistareas.html" class="nav-link">Mis tareas</a>
+  </div>
+  <div class="nav-right">
+    <a href="ayuda.html" class="nav-right-link">Ayuda</a>
+    <a href="notificaciones.html" class="nav-right-link">Notificaciones</a>
+    <a href="mensajes.html" class="nav-link activa">Mensajes</a>
+    <div class="nav-av-wrap">
+      <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <div class="dd-header"><div class="dd-nombre" id="dd-nombre">Cargando...</div><div class="dd-sub" onclick="window.location.href='perfil.html'">Ver perfil público</div></div>
+        <a href="mistareas.html" class="dd-item">Mis tareas <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <a href="configuracion.html" class="dd-item">Configuración <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <div class="dd-item rojo" onclick="cerrarSesion()">Cerrar sesión</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="msg-wrap">
+  <!-- SIDEBAR: lista de conversaciones -->
+  <aside class="msg-sidebar" id="msg-sidebar">
+    <div class="msg-sidebar-head">
+      <div class="msg-sidebar-titulo">💬 Mensajes</div>
+      <div class="msg-search-wrap">
+        <span class="msg-search-ico">🔍</span>
+        <input class="msg-search" id="conv-search" type="text" placeholder="Buscar conversación..." oninput="filtrarConvs(this.value)">
+      </div>
+    </div>
+    <div class="conv-lista" id="conv-lista">
+      <!-- Conversaciones cargadas por JS -->
+      <div style="padding:20px">
+        <div class="skel" style="width:80%;margin-bottom:10px"></div>
+        <div class="skel" style="width:60%;margin-bottom:24px"></div>
+        <div class="skel" style="width:80%;margin-bottom:10px"></div>
+        <div class="skel" style="width:60%"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- PANEL CHAT -->
+  <div class="chat-panel" id="chat-panel">
+    <div class="chat-empty" id="chat-empty">
+      <div class="chat-empty-ico">💬</div>
+      <div class="chat-empty-txt">Seleccioná una conversación</div>
+    </div>
+    <!-- Header (oculto hasta seleccionar conv) -->
+    <div class="chat-header" id="chat-header" style="display:none">
+      <div class="chat-header-av" id="ch-av">?</div>
+      <div class="chat-header-info">
+        <div class="chat-header-nombre" id="ch-nombre">—</div>
+        <div class="chat-header-tarea">Tarea: <a href="#" id="ch-tarea-link" id="ch-tarea">—</a></div>
+      </div>
+      <span class="chat-estado en-curso" id="ch-estado" style="display:none">En curso</span>
+    </div>
+    <!-- Mensajes -->
+    <div class="chat-msgs" id="chat-msgs" style="display:none"></div>
+    <!-- Footer -->
+    <div class="chat-footer" id="chat-footer" style="display:none">
+      <div class="chat-footer-inner">
+        <!-- Botón compartir dirección (solo visible para el dueño) -->
+        <button class="chat-dir-btn" id="btn-dir" style="display:none" onclick="compartirDireccion()">
+          📍 Compartir dirección de la tarea
+        </button>
+        <div class="chat-input-row">
+          <textarea class="chat-input" id="chat-input" placeholder="Escribí un mensaje..." rows="1"
+            oninput="autoH(this)" onkeydown="onChatKey(event)"></textarea>
+          <button class="chat-send" id="chat-send" onclick="enviarMensaje()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../navbar.js"></script>
+<script>
+// db desde navbar.js
+let miUserId = null;
+let convActiva = null;   // { conv_id, otro_id, tarea_id, tarea_titulo, dir_privada, es_dueno }
+let todasConvs = [];
+let rtChannel = null;
+
+// ── INIT ──
+(async () => {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.replace('login.html'); return; }
+  miUserId = session.user.id;
+
+  // Abrir conversación directa si viene ?conv=ID en la URL
+  const params = new URLSearchParams(window.location.search);
+  const convParam = params.get('conv');
+
+  await cargarConversaciones(convParam);
+})();
+
+// ── CARGAR CONVERSACIONES ──
+// Una "conversación" = una oferta aceptada donde el usuario es dueño o tasker
+async function cargarConversaciones(autoAbrirId) {
+  try {
+    // Buscar todas las ofertas aceptadas donde participo
+    const { data: ofertas, error } = await db.from('ofertas')
+      .select(`
+        id,
+        tarea_id,
+        tasker_id,
+        monto,
+        tareas ( id, titulo, estado, user_id, direccion_privada )
+      `)
+      .eq('estado', 'aceptada')
+      .or(`tasker_id.eq.${miUserId},tareas.user_id.eq.${miUserId}`);
+
+    if (error) { console.error('Error convs:', error); mostrarConvsVacias(); return; }
+    if (!ofertas || !ofertas.length) { mostrarConvsVacias(); return; }
+
+    // Filtrar solo las que me involucran
+    const mias = ofertas.filter(o =>
+      o.tasker_id === miUserId || o.tareas?.user_id === miUserId
+    );
+
+    if (!mias.length) { mostrarConvsVacias(); return; }
+
+    // Para cada conversación necesitamos el perfil del otro usuario
+    const otrosIds = mias.map(o =>
+      o.tareas?.user_id === miUserId ? o.tasker_id : o.tareas?.user_id
+    ).filter(Boolean);
+
+    const { data: perfiles } = await db.from('profiles')
+      .select('id,nombre,avatar_url').in('id', [...new Set(otrosIds)]);
+    const perfsMap = {};
+    (perfiles || []).forEach(p => perfsMap[p.id] = p);
+
+    // Obtener último mensaje de cada conversación
+    const convIds = mias.map(o => o.id);
+    const { data: ultMsgs } = await db.from('mensajes')
+      .select('conv_id,contenido,created_at,tipo')
+      .in('conv_id', convIds)
+      .order('created_at', { ascending: false });
+
+    const ultMap = {};
+    (ultMsgs || []).forEach(m => { if (!ultMap[m.conv_id]) ultMap[m.conv_id] = m; });
+
+    // Contar no leídos
+    const { data: noLeidos } = await db.from('mensajes')
+      .select('conv_id')
+      .in('conv_id', convIds)
+      .eq('leido', false)
+      .neq('user_id', miUserId);
+
+    const nolMap = {};
+    (noLeidos || []).forEach(m => { nolMap[m.conv_id] = (nolMap[m.conv_id] || 0) + 1; });
+
+    todasConvs = mias.map(o => {
+      const esDueno = o.tareas?.user_id === miUserId;
+      const otroId = esDueno ? o.tasker_id : o.tareas?.user_id;
+      const perfil = perfsMap[otroId] || {};
+      const ult = ultMap[o.id];
+      return {
+        conv_id: o.id,
+        tarea_id: o.tarea_id,
+        tarea_titulo: o.tareas?.titulo || 'Tarea',
+        tarea_estado: o.tareas?.estado || 'activa',
+        otro_id: otroId,
+        otro_nombre: perfil.nombre || 'Usuario',
+        otro_avatar: perfil.avatar_url || null,
+        dir_privada: o.tareas?.direccion_privada || null,
+        es_dueno: esDueno,
+        ult_msg: ult?.contenido || null,
+        ult_hora: ult?.created_at || o.created_at,
+        ult_tipo: ult?.tipo || null,
+        no_leidos: nolMap[o.id] || 0
+      };
+    }).sort((a, b) => new Date(b.ult_hora) - new Date(a.ult_hora));
+
+    renderConvs(todasConvs);
+
+    // Auto-abrir si hay parámetro en URL
+    if (autoAbrirId) {
+      const conv = todasConvs.find(c => c.conv_id === autoAbrirId);
+      if (conv) abrirConv(conv);
+    } else if (todasConvs.length === 1) {
+      abrirConv(todasConvs[0]);
+    }
+
+  } catch(e) { console.error(e); mostrarConvsVacias(); }
+}
+
+function renderConvs(convs) {
+  const lista = document.getElementById('conv-lista');
+  if (!convs.length) { mostrarConvsVacias(); return; }
+  lista.innerHTML = '';
+  convs.forEach(c => {
+    const ini = c.otro_nombre.charAt(0).toUpperCase();
+    const avHtml = c.otro_avatar
+      ? `<img src="${c.otro_avatar}" alt="${escH(c.otro_nombre)}">`
+      : ini;
+    let preview = c.ult_msg
+      ? (c.ult_tipo === 'direccion' ? '📍 Dirección compartida' : escH(c.ult_msg.substring(0, 45)))
+      : 'Sin mensajes aún';
+    const hora = c.ult_hora ? fmtHora(c.ult_hora) : '';
+    const badge = c.no_leidos > 0 ? `<div class="conv-badge">${c.no_leidos}</div>` : '';
+    const isActiva = convActiva?.conv_id === c.conv_id;
+
+    const div = document.createElement('div');
+    div.className = 'conv-item' + (isActiva ? ' activa' : '');
+    div.dataset.convId = c.conv_id;
+    div.onclick = () => abrirConv(c);
+    div.innerHTML = `
+      <div class="conv-av">${avHtml}</div>
+      <div class="conv-info">
+        <div class="conv-nombre">${escH(c.otro_nombre)}</div>
+        <div class="conv-tarea">📋 ${escH(c.tarea_titulo)}</div>
+        <div class="conv-preview">${preview}</div>
+      </div>
+      <div class="conv-meta">
+        <div class="conv-hora">${hora}</div>
+        ${badge}
+      </div>`;
+    lista.appendChild(div);
+  });
+}
+
+function mostrarConvsVacias() {
+  document.getElementById('conv-lista').innerHTML = `
+    <div class="conv-empty">
+      <div class="conv-empty-ico">💬</div>
+      <div class="conv-empty-txt">Todavía no tenés conversaciones.<br>Se habilitan cuando aceptás una oferta.</div>
+    </div>`;
+}
+
+function filtrarConvs(q) {
+  const filtradas = q
+    ? todasConvs.filter(c =>
+        c.otro_nombre.toLowerCase().includes(q.toLowerCase()) ||
+        c.tarea_titulo.toLowerCase().includes(q.toLowerCase()))
+    : todasConvs;
+  renderConvs(filtradas);
+}
+
+// ── ABRIR CONVERSACIÓN ──
+async function abrirConv(conv) {
+  convActiva = conv;
+
+  // Marcar activa en sidebar
+  document.querySelectorAll('.conv-item').forEach(el => {
+    el.classList.toggle('activa', el.dataset.convId === conv.conv_id);
+  });
+
+  // Header
+  const avEl = document.getElementById('ch-av');
+  avEl.innerHTML = conv.otro_avatar
+    ? `<img src="${conv.otro_avatar}" alt="${escH(conv.otro_nombre)}">`
+    : conv.otro_nombre.charAt(0).toUpperCase();
+  document.getElementById('ch-nombre').textContent = conv.otro_nombre;
+  const tareaLink = document.getElementById('ch-tarea-link');
+  tareaLink.textContent = conv.tarea_titulo;
+  tareaLink.href = 'tarea.html?id=' + conv.tarea_id;
+
+  const estadoEl = document.getElementById('ch-estado');
+  if (conv.tarea_estado === 'en-curso') {
+    estadoEl.style.display = 'inline-flex';
+    estadoEl.textContent = '🔄 En curso';
+    estadoEl.className = 'chat-estado en-curso';
+  } else if (conv.tarea_estado === 'terminada') {
+    estadoEl.style.display = 'inline-flex';
+    estadoEl.textContent = '✅ Terminada';
+    estadoEl.className = 'chat-estado terminada';
+  } else {
+    estadoEl.style.display = 'none';
+  }
+
+  // Mostrar/ocultar botón de dirección (solo dueño, solo si hay dirección)
+  document.getElementById('btn-dir').style.display =
+    (conv.es_dueno && conv.dir_privada) ? 'flex' : 'none';
+
+  // Mostrar paneles
+  document.getElementById('chat-empty').style.display = 'none';
+  document.getElementById('chat-header').style.display = 'flex';
+  document.getElementById('chat-msgs').style.display = 'flex';
+  document.getElementById('chat-footer').style.display = 'block';
+
+  // Cargar mensajes
+  await cargarMensajes(conv.conv_id);
+
+  // Subscribirse a realtime
+  if (rtChannel) db.removeChannel(rtChannel);
+  rtChannel = db.channel('chat-' + conv.conv_id)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'mensajes',
+      filter: 'conv_id=eq.' + conv.conv_id
+    }, payload => {
+      if (payload.new.user_id !== miUserId) {
+        agregarMensajeDOM(payload.new, false);
+        marcarLeidos(conv.conv_id);
+      }
+    })
+    .subscribe();
+
+  // Marcar leídos
+  marcarLeidos(conv.conv_id);
+}
+
+// ── CARGAR MENSAJES ──
+async function cargarMensajes(convId) {
+  const cont = document.getElementById('chat-msgs');
+  cont.innerHTML = '<div style="text-align:center;padding:20px;color:var(--suave);font-size:.82rem;font-weight:700">Cargando...</div>';
+
+  try {
+    const { data, error } = await db.from('mensajes')
+      .select('*').eq('conv_id', convId)
+      .order('created_at', { ascending: true }).limit(200);
+
+    if (error) throw error;
+    cont.innerHTML = '';
+
+    if (!data || !data.length) {
+      cont.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--suave);font-size:.84rem;font-weight:700">🤝 Oferta aceptada. ¡Ya pueden hablar!</div>';
+      return;
+    }
+
+    let ultimoDia = '';
+    data.forEach(m => {
+      const dia = new Date(m.created_at).toLocaleDateString('es-AR', {day:'numeric',month:'long',year:'numeric'});
+      if (dia !== ultimoDia) {
+        ultimoDia = dia;
+        const sep = document.createElement('div');
+        sep.className = 'msg-dia';
+        sep.textContent = dia;
+        cont.appendChild(sep);
+      }
+      agregarMensajeDOM(m, true);
+    });
+
+    scrollAbajo();
+  } catch(e) {
+    console.error(e);
+    cont.innerHTML = '<div style="text-align:center;padding:20px;color:var(--rojo);font-size:.82rem">Error al cargar mensajes</div>';
+  }
+}
+
+function agregarMensajeDOM(msg, esInicial) {
+  const cont = document.getElementById('chat-msgs');
+  const esMio = msg.user_id === miUserId;
+  const div = document.createElement('div');
+  div.className = 'msg-row' + (esMio ? ' mio' : '');
+  div.id = 'msg-' + msg.id;
+
+  const hora = new Date(msg.created_at).toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
+
+  if (msg.tipo === 'direccion') {
+    div.innerHTML = `
+      <div class="msg-dir">
+        <div class="msg-dir-ico">📍</div>
+        <div class="msg-dir-label">Dirección de la tarea</div>
+        <div class="msg-dir-texto">${escH(msg.contenido)}</div>
+        <div class="msg-dir-hora">${hora}</div>
+      </div>`;
+  } else {
+    div.innerHTML = `
+      <div class="msg-bubble">${escH(msg.contenido)}</div>
+      <div style="display:flex;flex-direction:column">
+        <div class="msg-hora">${hora}</div>
+      </div>`;
+  }
+
+  cont.appendChild(div);
+  if (!esInicial) scrollAbajo();
+}
+
+// ── ENVIAR MENSAJE ──
+async function enviarMensaje() {
+  if (!convActiva) return;
+  const inp = document.getElementById('chat-input');
+  const texto = inp.value.trim();
+  if (!texto) return;
+
+  const btn = document.getElementById('chat-send');
+  btn.disabled = true;
+
+  try {
+    const { data, error } = await db.from('mensajes').insert({
+      conv_id: convActiva.conv_id,
+      user_id: miUserId,
+      contenido: texto,
+      tipo: 'texto'
+    }).select().single();
+
+    if (error) throw error;
+
+    inp.value = ''; inp.style.height = '';
+    agregarMensajeDOM(data, false);
+
+    // Notificar al otro
+    await notificarNuevoMensaje(texto, 'texto');
+
+    // Actualizar preview en sidebar
+    actualizarPreviewConv(convActiva.conv_id, texto, 'texto');
+
+  } catch(e) {
+    showToast('Error al enviar: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    inp.focus();
+  }
+}
+
+// ── COMPARTIR DIRECCIÓN ──
+async function compartirDireccion() {
+  if (!convActiva || !convActiva.es_dueno || !convActiva.dir_privada) return;
+
+  if (!confirm('¿Compartir tu dirección exacta con ' + convActiva.otro_nombre + '?')) return;
+
+  try {
+    const { data, error } = await db.from('mensajes').insert({
+      conv_id: convActiva.conv_id,
+      user_id: miUserId,
+      contenido: convActiva.dir_privada,
+      tipo: 'direccion'
+    }).select().single();
+
+    if (error) throw error;
+
+    agregarMensajeDOM(data, false);
+    await notificarNuevoMensaje('📍 Dirección compartida', 'direccion');
+    actualizarPreviewConv(convActiva.conv_id, convActiva.dir_privada, 'direccion');
+
+    // Ocultar botón (ya la compartió)
+    document.getElementById('btn-dir').style.display = 'none';
+    showToast('📍 Dirección compartida');
+
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+async function notificarNuevoMensaje(preview, tipo) {
+  if (!convActiva) return;
+  try {
+    const miNombre = window.chambaUser?.user_metadata?.nombre ||
+      window.chambaUser?.email?.split('@')[0] || 'Usuario';
+    const titulo = tipo === 'direccion'
+      ? '📍 ' + miNombre + ' compartió la dirección'
+      : '💬 Nuevo mensaje de ' + miNombre;
+    const msg = tipo === 'direccion' ? '📍 Dirección compartida' : preview.substring(0, 80);
+
+    await db.from('notificaciones').insert({
+      user_id: convActiva.otro_id,
+      tipo: 'sistema',
+      titulo,
+      mensaje: msg,
+      tarea_id: convActiva.tarea_id,
+      actor_id: miUserId,
+      actor_nombre: miNombre
+    });
+  } catch(e) { console.warn('Notif error:', e.message); }
+}
+
+async function marcarLeidos(convId) {
+  try {
+    await db.from('mensajes')
+      .update({ leido: true })
+      .eq('conv_id', convId)
+      .eq('leido', false)
+      .neq('user_id', miUserId);
+
+    // Limpiar badge en sidebar
+    const item = document.querySelector(`.conv-item[data-conv-id="${convId}"]`);
+    item?.querySelector('.conv-badge')?.remove();
+  } catch(e) {}
+}
+
+function actualizarPreviewConv(convId, texto, tipo) {
+  const item = document.querySelector(`.conv-item[data-conv-id="${convId}"] .conv-preview`);
+  if (item) item.textContent = tipo === 'direccion' ? '📍 Dirección compartida' : texto.substring(0, 45);
+  const hora = document.querySelector(`.conv-item[data-conv-id="${convId}"] .conv-hora`);
+  if (hora) hora.textContent = fmtHora(new Date().toISOString());
+}
+
+// ── UTILS ──
+function escH(t) { if(!t)return''; const d=document.createElement('div'); d.textContent=String(t); return d.innerHTML; }
+function autoH(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,110)+'px'; }
+function onChatKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();enviarMensaje();} }
+function scrollAbajo() { const c=document.getElementById('chat-msgs'); if(c) c.scrollTop=c.scrollHeight; }
+function fmtHora(iso) {
+  const d = new Date(iso);
+  const ahora = new Date();
+  const diffDias = Math.floor((ahora - d) / 86400000);
+  if (diffDias === 0) return d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+  if (diffDias === 1) return 'Ayer';
+  if (diffDias < 7) return d.toLocaleDateString('es-AR',{weekday:'short'});
+  return d.toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+}
+</script>
+</body>
+</html>
