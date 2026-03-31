@@ -183,8 +183,8 @@
   </div>
   <div class="nav-right">
     <a href="ayuda.html" class="nav-right-link">Ayuda</a>
-    <a href="notificaciones.html" class="nav-right-link" id="nav-notif-link">Notificaciones</a>
-    <a href="mensajes.html" class="nav-right-link">Mensajes</a>
+    <a href="notificaciones.html" class="nav-right-link" id="nav-notif-link" style="position:relative">Notificaciones</a>
+    <a href="mensajes.html" class="nav-right-link" id="nav-mensajes-link" style="position:relative">Mensajes</a>
     <div class="nav-av-wrap">
       <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
       <div class="nav-dropdown" id="nav-dropdown">
@@ -297,6 +297,28 @@
       <div id="btn-cancelar-wrap">
         <button class="btn-cancelar" onclick="abrirModalCancelar()">❌ Cancelar tarea</button>
       </div>
+
+      <!-- PANEL EN CURSO (autor) — aparece cuando la tarea está asignada -->
+      <div id="panel-en-curso-autor" style="display:none;margin-top:14px">
+        <div style="background:var(--verde-c);border:1.5px solid var(--verde);border-radius:var(--radio-lg);padding:18px;text-align:center">
+          <div style="font-size:1.4rem;margin-bottom:6px">🔄</div>
+          <div style="font-size:.85rem;font-weight:900;color:var(--verde-o);margin-bottom:4px">Tarea en curso</div>
+          <div style="font-size:.75rem;font-weight:700;color:var(--suave);margin-bottom:14px">Cuando el tasker confirme que terminó, vas a poder realizar el pago.</div>
+          <a id="btn-ir-chat-autor" href="#" style="display:inline-flex;align-items:center;gap:6px;background:var(--verde);color:#fff;padding:10px 20px;border-radius:var(--radio-pill);font-family:Nunito,sans-serif;font-weight:900;font-size:.84rem;text-decoration:none;margin-bottom:10px">
+            💬 Ir al chat
+          </a>
+        </div>
+        <!-- Aparece cuando el tasker marcó como terminado -->
+        <div id="panel-confirmar-pago" style="display:none;margin-top:10px;background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:var(--radio-lg);padding:18px;text-align:center">
+          <div style="font-size:1.4rem;margin-bottom:6px">💰</div>
+          <div style="font-size:.88rem;font-weight:900;color:#92400E;margin-bottom:6px">El tasker confirmó que terminó</div>
+          <div style="font-size:.75rem;font-weight:700;color:#92400E;opacity:.8;margin-bottom:14px">Verificá el trabajo y confirmá el pago para cerrar la tarea.</div>
+          <button onclick="confirmarPago()" style="width:100%;padding:12px;background:#F59E0B;color:#fff;border:none;border-radius:var(--radio-pill);font-family:Nunito,sans-serif;font-weight:900;font-size:.9rem;cursor:pointer;transition:all .2s" onmouseover="this.style.background='#D97706'" onmouseout="this.style.background='#F59E0B'">
+            💳 Confirmar y realizar pago
+          </button>
+          <div style="font-size:.68rem;font-weight:700;color:var(--suave);margin-top:8px">Los métodos de pago se configuran en tu perfil</div>
+        </div>
+      </div>
     </div>
 
     <!-- PANEL TASKER -->
@@ -321,6 +343,33 @@
         <div class="oferta-enviada-titulo">¡Oferta enviada!</div>
         <div class="oferta-enviada-txt">El dueño va a ver tu propuesta. Si le interesa te va a contactar.</div>
       </div>
+
+      <!-- PANEL TASKER EN CURSO — aparece cuando fue seleccionado -->
+      <div id="panel-en-curso-tasker" style="display:none">
+        <div style="background:var(--verde-c);border:1.5px solid var(--verde);border-radius:var(--radio-lg);padding:18px;text-align:center;margin-bottom:10px">
+          <div style="font-size:1.3rem;margin-bottom:6px">🎉</div>
+          <div style="font-size:.88rem;font-weight:900;color:var(--verde-o);margin-bottom:4px">¡Sos el tasker asignado!</div>
+          <div style="font-size:.75rem;font-weight:700;color:var(--suave);margin-bottom:12px">Coordiná los detalles con el cliente por el chat.</div>
+          <a id="btn-ir-chat-tasker" href="#" style="display:inline-flex;align-items:center;gap:6px;background:var(--verde);color:#fff;padding:10px 20px;border-radius:var(--radio-pill);font-family:Nunito,sans-serif;font-weight:900;font-size:.84rem;text-decoration:none;width:100%;justify-content:center;box-sizing:border-box">
+            💬 Ir al chat con el cliente
+          </a>
+        </div>
+        <!-- Botón confirmar tarea terminada -->
+        <div id="wrap-btn-termine" style="background:var(--fondo);border:1.5px solid var(--borde);border-radius:var(--radio-lg);padding:16px;text-align:center">
+          <div style="font-size:.8rem;font-weight:800;color:var(--suave);margin-bottom:10px">¿Ya terminaste la tarea?</div>
+          <button id="btn-termine" onclick="taskerConfirmaTerminado()" style="width:100%;padding:11px;background:var(--verde);color:#fff;border:none;border-radius:var(--radio-pill);font-family:Nunito,sans-serif;font-weight:900;font-size:.88rem;cursor:pointer;transition:all .2s" onmouseover="this.style.background='var(--verde-o)'" onmouseout="this.style.background='var(--verde)'">
+            ✅ Confirmé que terminé mi tarea
+          </button>
+          <div style="font-size:.68rem;font-weight:700;color:var(--suave);margin-top:7px">El cliente va a recibir una notificación para confirmar el pago.</div>
+        </div>
+        <!-- Estado: esperando pago -->
+        <div id="wrap-esperando-pago" style="display:none;background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:var(--radio-lg);padding:16px;text-align:center">
+          <div style="font-size:1.2rem;margin-bottom:6px">⏳</div>
+          <div style="font-size:.84rem;font-weight:900;color:#92400E;margin-bottom:4px">Esperando confirmación de pago</div>
+          <div style="font-size:.74rem;font-weight:700;color:#92400E;opacity:.8">El cliente confirmará el trabajo y procesará el pago.</div>
+        </div>
+      </div>
+
       <div class="login-gate" id="of-login-gate" style="display:none;margin-top:4px">
         <div class="login-gate-ico">🔒</div>
         <div class="login-gate-txt">Iniciá sesión para ofertar</div>
@@ -490,7 +539,12 @@ function renderTarea(t) {
   } else if (esAutor) {
     document.getElementById('panel-autor').style.display = 'block';
     document.getElementById('qa-form-autor').style.display = 'block';
-    if (estado === 'cancelada') document.getElementById('btn-cancelar-wrap').style.display = 'none';
+    if (estado === 'cancelada') {
+      document.getElementById('btn-cancelar-wrap').style.display = 'none';
+    } else if (estado === 'en-curso' || estado === 'terminada') {
+      // Cargar info del tasker asignado y mostrar controles de cierre
+      cargarInfoAsignado(t.id, miUserId);
+    }
     cargarOfertas();
   } else {
     document.getElementById('panel-tasker').style.display = 'block';
@@ -515,11 +569,11 @@ function renderTarea(t) {
   }
 }
 
-// Muestra info del tasker asignado a visitantes (cuando tarea está en-curso)
+// Muestra info del tasker asignado y controles de cierre según rol
 async function cargarInfoAsignado(tareaId, miId) {
   try {
     const { data: oferta } = await db.from('ofertas')
-      .select('id,tasker_id,monto')
+      .select('id,tasker_id,monto,estado')
       .eq('tarea_id', tareaId)
       .eq('estado', 'aceptada')
       .maybeSingle();
@@ -532,38 +586,69 @@ async function cargarInfoAsignado(tareaId, miId) {
     const nombre = perfil?.nombre || 'Tasker';
     const ini = nombre.charAt(0).toUpperCase();
     const foto = perfil?.avatar_url;
+    const chatLink = 'mensajes.html?conv=' + oferta.id;
 
-    // Banner público visible para todos debajo del header
+    // ── Banner público (visible para todos) ──
     const header = document.getElementById('tarea-header');
     if (header && !document.getElementById('banner-asignada')) {
       const banner = document.createElement('div');
       banner.id = 'banner-asignada';
       banner.style.cssText = 'background:linear-gradient(135deg,#F0FDF9,#D1FAE5);border:1.5px solid var(--verde);border-radius:var(--radio-lg);padding:18px 24px;margin-bottom:20px;display:flex;align-items:center;gap:14px;box-shadow:var(--sombra)';
       const avHtml = foto
-        ? `<img src="${foto}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid var(--verde);flex-shrink:0">`
-        : `<div style="width:42px;height:42px;border-radius:50%;background:var(--verde);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;flex-shrink:0">${ini}</div>`;
+        ? `<a href="perfil.html?id=${oferta.tasker_id}"><img src="${escH(foto)}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--verde);flex-shrink:0;display:block"></a>`
+        : `<a href="perfil.html?id=${oferta.tasker_id}" style="width:44px;height:44px;border-radius:50%;background:var(--verde);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;flex-shrink:0;text-decoration:none">${ini}</a>`;
       banner.innerHTML = `
         ${avHtml}
         <div>
-          <div style="font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.6px;color:var(--verde-o);margin-bottom:3px">✅ Tarea asignada</div>
-          <div style="font-size:.9rem;font-weight:800;color:var(--texto)">
+          <div style="font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:.6px;color:var(--verde-o);margin-bottom:3px">✅ Tarea asignada</div>
+          <div style="font-size:.92rem;font-weight:800;color:var(--texto)">
             Asignada a <a href="perfil.html?id=${oferta.tasker_id}" style="color:var(--verde-o);font-weight:900;text-decoration:none">${escH(nombre)}</a>
           </div>
         </div>`;
       header.insertAdjacentElement('afterend', banner);
     }
 
-    // Si soy el tasker asignado, mostrar link al chat
-    const infoEl = document.getElementById('asignada-info');
-    if (infoEl && miId === oferta.tasker_id) {
-      infoEl.innerHTML = `
-        ¡Sos el tasker asignado! 🎉<br>
-        <a href="mensajes.html?conv=${oferta.id}" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:var(--verde);color:#fff;padding:9px 18px;border-radius:var(--radio-pill);font-family:Nunito,sans-serif;font-weight:900;font-size:.85rem;text-decoration:none">
-          💬 Ir al chat con el cliente
-        </a>`;
-    } else if (infoEl) {
-      infoEl.innerHTML = `Asignada a <a href="perfil.html?id=${oferta.tasker_id}" style="color:var(--verde-o);font-weight:900">${escH(nombre)}</a>`;
+    // ── Chequear si la tarea ya tiene "tasker_confirmo" ──
+    const taskerConfirmo = tareaData?.tasker_confirmo || false;
+
+    if (miId === esAutor && esAutor) {
+      // SOY EL DUEÑO en modo en-curso
+    } else if (miId === oferta.tasker_id) {
+      // ── SOY EL TASKER ASIGNADO ──
+      document.getElementById('of-form').style.display = 'none';
+      document.getElementById('of-enviada').style.display = 'none';
+      document.getElementById('panel-en-curso-tasker').style.display = 'block';
+      document.getElementById('btn-ir-chat-tasker').href = chatLink;
+
+      if (taskerConfirmo) {
+        document.getElementById('wrap-btn-termine').style.display = 'none';
+        document.getElementById('wrap-esperando-pago').style.display = 'block';
+      }
+      // Guardar ofertaId globalmente para usarlo en las funciones
+      window._ofertaActivaId = oferta.id;
+      window._taskerActivoId = oferta.tasker_id;
+
+    } else {
+      // SOY UN VISITANTE — mostrar quién tiene la tarea
+      const infoEl = document.getElementById('asignada-info');
+      if (infoEl) {
+        infoEl.innerHTML = `Asignada a <a href="perfil.html?id=${oferta.tasker_id}" style="color:var(--verde-o);font-weight:900">${escH(nombre)}</a>`;
+      }
     }
+
+    // ── SOY EL DUEÑO en modo en-curso ──
+    if (esAutor) {
+      document.getElementById('btn-cancelar-wrap').style.display = 'none';
+      document.getElementById('panel-en-curso-autor').style.display = 'block';
+      document.getElementById('btn-ir-chat-autor').href = chatLink;
+      window._ofertaActivaId = oferta.id;
+      window._taskerActivoId = oferta.tasker_id;
+
+      if (taskerConfirmo) {
+        document.getElementById('panel-confirmar-pago').style.display = 'block';
+      }
+    }
+
   } catch(e) { console.warn(e); }
 }
 
@@ -642,38 +727,103 @@ async function aceptarOferta(ofertaId, taskerId, monto) {
     const { error: e2 } = await db.from('tareas').update({ estado: 'en-curso' }).eq('id', TAREA_ID);
     if (e2) throw e2;
 
-    // Rechazar las otras ofertas pendientes automáticamente
+    // Rechazar el resto de ofertas pendientes
     await db.from('ofertas').update({ estado: 'rechazada' })
       .eq('tarea_id', TAREA_ID).eq('estado', 'pendiente').neq('id', ofertaId);
 
-    // Notificar al tasker que su oferta fue aceptada y puede ir al chat
+    // Notificar al tasker
     const montoStr = '$' + Number(monto).toLocaleString('es-AR');
-    const miNombre = currentUser.user_metadata?.nombre ||
-      currentUser.email?.split('@')[0] || 'El propietario';
-
-    await crearNotificacion(
-      taskerId,
-      'oferta_aceptada',
+    const miNombre = currentUser.user_metadata?.nombre || currentUser.email?.split('@')[0] || 'El propietario';
+    await crearNotificacion(taskerId, 'oferta_aceptada',
       '🎉 ¡Tu oferta fue aceptada!',
-      `Tu oferta de ${montoStr} fue aceptada. Entrá al chat para coordinar los detalles.`,
+      `Tu oferta de ${montoStr} fue aceptada. Entrá al chat para coordinar.`,
       miNombre
     );
 
-    showToast('✅ Oferta aceptada. Se habilitó el chat.');
+    showToast('✅ Oferta aceptada. ¡El chat está habilitado!');
 
-    // Actualizar UI
+    // Actualizar UI sin recargar
     document.getElementById('h-estado').className = 'estado-chip ep-en-curso';
     document.getElementById('h-estado').textContent = '🔄 En curso';
-    document.getElementById('btn-cancelar-wrap').style.display = 'none';
     if (tareaData) tareaData.estado = 'en-curso';
 
-    // Ir al chat directamente (conv_id = ofertaId ya que usamos el id de la oferta)
-    setTimeout(() => {
-      window.location.href = 'mensajes.html?conv=' + ofertaId;
-    }, 800);
+    // Refrescar el panel lateral del dueño
+    document.getElementById('panel-autor').style.display = 'block';
+    cargarOfertas();
+    cargarInfoAsignado(TAREA_ID, miUserId);
 
   } catch(e) {
     console.error(e);
+    showToast('Error: ' + e.message);
+  }
+}
+
+// ── TASKER confirma que terminó ──
+async function taskerConfirmaTerminado() {
+  if (!window._ofertaActivaId) return;
+  const btn = document.getElementById('btn-termine');
+  btn.textContent = '...'; btn.disabled = true;
+
+  try {
+    // Guardar flag en la tarea
+    const { error } = await db.from('tareas')
+      .update({ tasker_confirmo: true })
+      .eq('id', TAREA_ID);
+    if (error) throw error;
+
+    // Notificar al dueño
+    const miNombre = currentUser.user_metadata?.nombre || currentUser.email?.split('@')[0] || 'El tasker';
+    await crearNotificacion(autorId, 'sistema',
+      '✅ El tasker confirmó que terminó',
+      'Entrá a la tarea para confirmar el pago y cerrar.',
+      miNombre
+    );
+
+    // Actualizar UI
+    document.getElementById('wrap-btn-termine').style.display = 'none';
+    document.getElementById('wrap-esperando-pago').style.display = 'block';
+    showToast('✅ Confirmado. Esperando que el cliente procese el pago.');
+
+  } catch(e) {
+    showToast('Error: ' + e.message);
+    btn.textContent = '✅ Confirmé que terminé mi tarea'; btn.disabled = false;
+  }
+}
+
+// ── DUEÑO confirma pago y cierra la tarea ──
+async function confirmarPago() {
+  if (!confirm('¿Confirmar que el trabajo fue realizado y proceder con el pago?')) return;
+
+  try {
+    // Marcar tarea como terminada
+    const { error: e1 } = await db.from('tareas')
+      .update({ estado: 'terminada', terminada_at: new Date().toISOString() })
+      .eq('id', TAREA_ID);
+    if (e1) throw e1;
+
+    // Notificar al tasker
+    const miNombre = currentUser.user_metadata?.nombre || currentUser.email?.split('@')[0] || 'El cliente';
+    if (window._taskerActivoId) {
+      await crearNotificacion(window._taskerActivoId, 'sistema',
+        '💰 ¡El cliente confirmó el pago!',
+        'La tarea fue marcada como terminada. El pago se procesará en breve.',
+        miNombre
+      );
+    }
+
+    // Actualizar UI
+    document.getElementById('h-estado').className = 'estado-chip ep-terminada';
+    document.getElementById('h-estado').textContent = '✅ Terminada';
+    document.getElementById('panel-en-curso-autor').innerHTML = `
+      <div style="background:var(--azul-c);border:1.5px solid var(--azul);border-radius:var(--radio-lg);padding:20px;text-align:center">
+        <div style="font-size:1.8rem;margin-bottom:8px">🎉</div>
+        <div style="font-size:.9rem;font-weight:900;color:#1D4ED8;margin-bottom:4px">¡Tarea completada!</div>
+        <div style="font-size:.75rem;font-weight:700;color:var(--suave)">El pago se procesará una vez configurados los métodos de pago.</div>
+      </div>`;
+
+    showToast('🎉 ¡Tarea completada! Pago en proceso.');
+
+  } catch(e) {
     showToast('Error: ' + e.message);
   }
 }

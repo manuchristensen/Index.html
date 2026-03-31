@@ -125,8 +125,8 @@
   </div>
   <div class="nav-right">
     <a href="ayuda.html" class="nav-right-link">Ayuda</a>
-    <a href="notificaciones.html" class="nav-right-link">Notificaciones</a>
-    <a href="mensajes.html" class="nav-link activa">Mensajes</a>
+    <a href="notificaciones.html" class="nav-right-link" id="nav-notif-link" style="position:relative">Notificaciones</a>
+    <a href="mensajes.html" class="nav-link activa" id="nav-mensajes-link" style="position:relative">Mensajes</a>
     <div class="nav-av-wrap">
       <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
       <div class="nav-dropdown" id="nav-dropdown">
@@ -223,30 +223,60 @@ let rtChannel = null;
 // Una "conversación" = una oferta aceptada donde el usuario es dueño o tasker
 async function cargarConversaciones(autoAbrirId) {
   try {
-    // Buscar todas las ofertas aceptadas donde participo
-    const { data: ofertas, error } = await db.from('ofertas')
-      .select(`
-        id,
-        tarea_id,
-        tasker_id,
-        monto,
-        tareas ( id, titulo, estado, user_id, direccion_privada )
-      `)
+    // El .or() con filtro sobre tabla relacionada (tareas.user_id) NO funciona en Supabase.
+    // Solución: dos queries separadas y merge.
+
+    // Query 1: ofertas donde soy el TASKER
+    const { data: comoTasker } = await db.from('ofertas')
+      .select(`id, tarea_id, tasker_id, monto, tareas ( id, titulo, estado, user_id, direccion_privada )`)
       .eq('estado', 'aceptada')
-      .or(`tasker_id.eq.${miUserId},tareas.user_id.eq.${miUserId}`);
+      .eq('tasker_id', miUserId);
 
-    if (error) { console.error('Error convs:', error); mostrarConvsVacias(); return; }
-    if (!ofertas || !ofertas.length) { mostrarConvsVacias(); return; }
+    // Query 2: ofertas donde soy el DUEÑO de la tarea
+    const { data: comoDueno } = await db.from('ofertas')
+      .select(`id, tarea_id, tasker_id, monto, tareas ( id, titulo, estado, user_id, direccion_privada )`)
+      .eq('estado', 'aceptada')
+      .eq('tareas.user_id', miUserId);
 
-    // Filtrar solo las que me involucran
-    const mias = ofertas.filter(o =>
-      o.tasker_id === miUserId || o.tareas?.user_id === miUserId
-    );
+    // Merge y deduplicar por id de oferta
+    const vistas = new Set();
+    const ofertas = [];
+    for (const o of [...(comoTasker || []), ...(comoDueno || [])]) {
+      if (!vistas.has(o.id) && o.tareas) {
+        vistas.add(o.id);
+        ofertas.push(o);
+      }
+    }
 
-    if (!mias.length) { mostrarConvsVacias(); return; }
+    // Query 3 (más confiable para el dueño): buscar tareas mías con ofertas aceptadas
+    const { data: tareasConOferta } = await db.from('tareas')
+      .select(`id, titulo, estado, user_id, direccion_privada, ofertas!inner ( id, tasker_id, monto )`)
+      .eq('user_id', miUserId)
+      .eq('ofertas.estado', 'aceptada');
+
+    if (tareasConOferta) {
+      for (const t of tareasConOferta) {
+        for (const o of (t.ofertas || [])) {
+          if (!vistas.has(o.id)) {
+            vistas.add(o.id);
+            ofertas.push({
+              id: o.id,
+              tarea_id: t.id,
+              tasker_id: o.tasker_id,
+              monto: o.monto,
+              tareas: { id: t.id, titulo: t.titulo, estado: t.estado, user_id: t.user_id, direccion_privada: t.direccion_privada }
+            });
+          }
+        }
+      }
+    }
+
+    if (!ofertas.length) { mostrarConvsVacias(); return; }
+
+    if (!ofertas.length) { mostrarConvsVacias(); return; }
 
     // Para cada conversación necesitamos el perfil del otro usuario
-    const otrosIds = mias.map(o =>
+    const otrosIds = ofertas.map(o =>
       o.tareas?.user_id === miUserId ? o.tasker_id : o.tareas?.user_id
     ).filter(Boolean);
 
@@ -256,7 +286,7 @@ async function cargarConversaciones(autoAbrirId) {
     (perfiles || []).forEach(p => perfsMap[p.id] = p);
 
     // Obtener último mensaje de cada conversación
-    const convIds = mias.map(o => o.id);
+    const convIds = ofertas.map(o => o.id);
     const { data: ultMsgs } = await db.from('mensajes')
       .select('conv_id,contenido,created_at,tipo')
       .in('conv_id', convIds)
@@ -275,7 +305,7 @@ async function cargarConversaciones(autoAbrirId) {
     const nolMap = {};
     (noLeidos || []).forEach(m => { nolMap[m.conv_id] = (nolMap[m.conv_id] || 0) + 1; });
 
-    todasConvs = mias.map(o => {
+    todasConvs = ofertas.map(o => {
       const esDueno = o.tareas?.user_id === miUserId;
       const otroId = esDueno ? o.tasker_id : o.tareas?.user_id;
       const perfil = perfsMap[otroId] || {};
