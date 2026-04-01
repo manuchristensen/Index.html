@@ -78,8 +78,6 @@
   font-weight:700;
   color:var(--suave);
   line-height:1.4;
-  /* NO white-space:nowrap — dejamos que el texto fluya naturalmente en una línea */
-  /* El padding compacto del item hace que quede de una sola línea en pantallas normales */
   overflow:hidden;
   display:-webkit-box;
   -webkit-line-clamp:2;
@@ -298,7 +296,9 @@ function render() {
 function itemHTML(n) {
   const cfg  = TIPOS[n.tipo]||TIPOS.sistema;
   const p    = n._p;
-  const actor= p?.nombre||n.actor_nombre||'Un usuario';
+  // Usar nombre del perfil si está disponible, o actor_nombre guardado
+  // Si actor_nombre parece ser un username de email (sin espacios, con números), mostrar igual
+  const actor = p?.nombre || n.actor_nombre || 'Usuario';
   const ini  = actor.charAt(0).toUpperCase();
   const hace = relativo(new Date(n.created_at));
   const nueva= !n.leida;
@@ -316,7 +316,7 @@ function itemHTML(n) {
   // Tarea link
   const tLink = titulo
     ? `<a class="tarea" href="${link}" onclick="event.stopPropagation()">${escH(titulo)}</a>`
-    : '';
+    : (n.tarea_id ? `<a class="tarea" href="${link}" onclick="event.stopPropagation()">esta tarea</a>` : '');
 
   // Texto en una sola línea
   let txt='';
