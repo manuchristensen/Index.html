@@ -44,61 +44,24 @@
 
 /* CARD agrupador */
 .notif-card{background:var(--blanco);border:1.5px solid var(--borde);border-radius:12px;overflow:hidden;margin-bottom:8px}
-
-/* ── ITEM ──
-   El <a> es solo el wrapper clickeable (display:block, ancho completo).
-   El layout flex está en .ni-row adentro — así no hay conflicto. */
-.ni{
-  display:block;
-  width:100%;
-  text-decoration:none;
-  color:inherit;
-  border-bottom:1px solid var(--borde);
-  transition:background .12s;
-  box-sizing:border-box;
-}
+.ni{display:flex;align-items:center;gap:12px;padding:12px 16px;text-decoration:none;color:inherit;border-bottom:1px solid var(--borde);transition:background .12s;width:100%;box-sizing:border-box}
 .ni:last-child{border-bottom:none}
 .ni:hover{background:#F8FAFC}
 .ni.nueva{background:#F0FDF9}
-.ni.nueva:hover{background:#E8FAF2}
-
-/* Fila interna con flex */
-.ni-row{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:11px 16px;
-  width:100%;
-  box-sizing:border-box;
-}
-
-/* Avatar fijo */
-.ni-av{position:relative;flex-shrink:0;width:44px;height:44px}
+.ni-av{position:relative;flex-shrink:0}
 .ni-img{width:44px;height:44px;border-radius:50%;object-fit:cover;display:block}
-.ni-ini{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:900;color:#fff}
-.ni-badge{position:absolute;bottom:-1px;right:-1px;width:17px;height:17px;border-radius:50%;background:var(--blanco);border:2px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:.5rem;line-height:1}
-
-/* Texto — ocupa el espacio sobrante, NO tiene white-space:nowrap */
-.ni-txt{
-  flex:1;
-  min-width:0;
-  font-size:.87rem;
-  font-weight:700;
-  color:var(--suave);
-  line-height:1.45;
-}
-/* Links dentro del texto: inline siempre */
-.ni-txt .actor{font-weight:900;color:var(--texto);text-decoration:none}
+.ni-ini{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:900;color:#fff;flex-shrink:0}
+.ni-badge{position:absolute;bottom:-1px;right:-1px;width:17px;height:17px;border-radius:50%;background:var(--blanco);border:2px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:.5rem}
+.ni-txt{flex:1;min-width:0;font-size:.875rem;font-weight:700;color:var(--suave);line-height:1.45}
+.ni-txt a{text-decoration:none}
+.ni-txt .actor{font-weight:900;color:var(--texto)}
 .ni-txt .actor:hover{color:var(--verde-o);text-decoration:underline}
-.ni-txt .tarea{font-weight:900;color:var(--verde-o);text-decoration:none}
+.ni-txt .tarea{font-weight:900;color:var(--verde-o)}
 .ni-txt .tarea:hover{text-decoration:underline}
-
-/* Tiempo a la derecha, no se encoge */
-.ni-meta{flex-shrink:0;text-align:right;margin-left:8px}
-.ni-hora{font-size:.68rem;font-weight:700;color:#94A3B8;white-space:nowrap;display:block}
-.ni-dot{width:8px;height:8px;border-radius:50%;background:var(--verde);opacity:0;transition:opacity .3s;display:inline-block;margin-top:4px}
-.ni.nueva .ni-dot{opacity:1}
+.ni-hora{flex-shrink:0;font-size:.68rem;font-weight:700;color:#94A3B8;white-space:nowrap;margin-left:8px;align-self:center}
 .ni.nueva .ni-hora{color:var(--verde-o)}
+.ni-dot{width:8px;height:8px;border-radius:50%;background:var(--verde);opacity:0;flex-shrink:0;margin-left:4px;align-self:center}
+.ni.nueva .ni-dot{opacity:1}
 
 /* Empty / skeleton */
 .empty-state{text-align:center;padding:60px 20px;color:var(--suave)}
@@ -334,17 +297,10 @@ function itemHTML(n) {
 
   return `
     <a class="ni${nueva?' nueva':''}" href="${link}" onclick="leerUna('${n.id}')">
-      <div class="ni-row">
-        <div class="ni-av">
-          ${avHTML}
-          <div class="ni-badge">${cfg.ico}</div>
-        </div>
-        <div class="ni-txt">${txt}</div>
-        <div class="ni-meta">
-          <span class="ni-hora">${hace}</span>
-          <span class="ni-dot"></span>
-        </div>
-      </div>
+      <div class="ni-av">${avHTML}<div class="ni-badge">${cfg.ico}</div></div>
+      <div class="ni-txt">${txt}</div>
+      <span class="ni-hora">${hace}</span>
+      <span class="ni-dot"></span>
     </a>`;
 }
 
