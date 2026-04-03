@@ -119,6 +119,15 @@
 /* Reviews */
 .reviews-empty{text-align:center;padding:22px;color:var(--suave)}
 
+/* BANNER ONBOARDING NOMBRE */
+.banner-nombre{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1.5px solid #FCD34D;border-radius:var(--radio-lg);padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:14px;box-shadow:var(--sombra)}
+.banner-nombre-ico{font-size:1.8rem;flex-shrink:0}
+.banner-nombre-txt{flex:1}
+.banner-nombre-titulo{font-size:.88rem;font-weight:900;color:#92400E;margin-bottom:3px}
+.banner-nombre-sub{font-size:.76rem;font-weight:700;color:#B45309}
+.banner-nombre-btn{padding:8px 18px;border:none;border-radius:var(--radio-pill);background:#F59E0B;color:#fff;font-family:'Nunito',sans-serif;font-weight:900;font-size:.82rem;cursor:pointer;white-space:nowrap;transition:background .2s;flex-shrink:0}
+.banner-nombre-btn:hover{background:#D97706}
+
 @media(max-width:740px){.perfil-wrap{grid-template-columns:1fr;padding:20px 16px 60px}}
 </style>
 </head>
@@ -132,8 +141,8 @@
   </div>
   <div class="nav-right">
     <a href="ayuda.html" class="nav-right-link">Ayuda</a>
-    <a href="notificaciones.html" class="nav-right-link" id="nav-notif-link" style="position:relative">Notificaciones</a>
-    <a href="mensajes.html" class="nav-right-link" id="nav-mensajes-link" style="position:relative">Mensajes</a>
+    <a href="notificaciones.html" class="nav-right-link">Notificaciones</a>
+    <a href="mensajes.html" class="nav-right-link">Mensajes</a>
     <div class="nav-av-wrap">
       <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
       <div class="nav-dropdown" id="nav-dropdown">
@@ -147,6 +156,17 @@
     </div>
   </div>
 </nav>
+
+<div id="banner-nombre" style="display:none;max-width:900px;margin:20px auto 0;padding:0 32px">
+  <div class="banner-nombre">
+    <div class="banner-nombre-ico">👤</div>
+    <div class="banner-nombre-txt">
+      <div class="banner-nombre-titulo">¡Completá tu nombre!</div>
+      <div class="banner-nombre-sub">Tu nombre aparece en todas tus tareas y comentarios. Hacé clic en tu nombre arriba para editarlo.</div>
+    </div>
+    <button class="banner-nombre-btn" onclick="editarNombre();document.getElementById('banner-nombre').style.display='none'">Editar nombre</button>
+  </div>
+</div>
 
 <div class="perfil-wrap">
 
@@ -343,11 +363,18 @@ async function cargarPerfil(authUser) {
   try {
     const { data: p } = await db.from('profiles').select('*').eq('id', perfilId).maybeSingle();
 
+    // Helper: extraer nombre legible desde el email (ej: "manuel.christensen@gmail.com" → "Manuel Christensen")
+    function nombreDesdeEmail(email) {
+      if (!email) return null;
+      const local = email.split('@')[0];
+      return local.replace(/[._\-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
     if (!p && esMiPerfil) {
       // Primer acceso: crear perfil usando datos de Google/auth
       const nombre = authUser?.user_metadata?.nombre
         || authUser?.user_metadata?.full_name
-        || authUser?.email?.split('@')[0]
+        || nombreDesdeEmail(authUser?.email)
         || 'Usuario';
       const avatar = authUser?.user_metadata?.avatar_url
         || authUser?.user_metadata?.picture
@@ -361,16 +388,18 @@ async function cargarPerfil(authUser) {
 
       perfilData = nuevo || { nombre, avatar_url: avatar };
     } else {
-      // Si es mi perfil y hay datos de Google más recientes, sincronizarlos
       if (p && esMiPerfil && authUser) {
         const googleNombre = authUser.user_metadata?.full_name || authUser.user_metadata?.nombre;
         const googleFoto = authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture;
 
-        // Solo sincronizar foto de Google si no hay foto propia ya guardada diferente
         const updates = {};
         if (!p.avatar_url && googleFoto) updates.avatar_url = googleFoto;
-        // Sincronizar nombre solo si el perfil tiene el default 'Usuario'
-        if ((!p.nombre || p.nombre === 'Usuario') && googleNombre) updates.nombre = googleNombre;
+        // Si el nombre es "Usuario", el prefijo del email sin formatear, o está vacío → intentar mejorar
+        const nombreEsDefault = !p.nombre || p.nombre === 'Usuario' || p.nombre === authUser?.email?.split('@')[0];
+        if (nombreEsDefault) {
+          const nombreMejor = googleNombre || nombreDesdeEmail(authUser?.email);
+          if (nombreMejor && nombreMejor !== 'Usuario') updates.nombre = nombreMejor;
+        }
 
         if (Object.keys(updates).length > 0) {
           await db.from('profiles').update(updates).eq('id', miUserId);
@@ -384,6 +413,14 @@ async function cargarPerfil(authUser) {
     }
 
     renderPerfil(perfilData);
+
+    // Si es mi perfil y el nombre sigue siendo genérico, mostrar banner para completarlo
+    if (esMiPerfil) {
+      const nombreFinal = perfilData.nombre || '';
+      const esGenerico = !nombreFinal || nombreFinal === 'Usuario';
+      if (esGenerico) mostrarBannerNombre();
+    }
+
   } catch(e) { console.error('Error perfil:', e); }
 }
 
@@ -516,6 +553,7 @@ async function guardarNombre() {
   await guardarCampo({ nombre: val });
   perfilData.nombre = val;
   document.getElementById('perf-nombre').textContent = val;
+  document.getElementById('banner-nombre').style.display = 'none';
   cancelarNombre();
 }
 
@@ -675,6 +713,12 @@ function renderChipsEdit(containerId, opciones, seleccionados, toggleFn, customI
 
 function actualizarChipsEdit(containerId, opciones, seleccionados, toggleFn, customItems) {
   renderChipsEdit(containerId, opciones, seleccionados, toggleFn, customItems);
+}
+
+// ══ BANNER ONBOARDING ══
+function mostrarBannerNombre() {
+  const b = document.getElementById('banner-nombre');
+  if (b) b.style.display = 'block';
 }
 
 // ══ GUARDAR ══
