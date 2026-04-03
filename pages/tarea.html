@@ -421,26 +421,33 @@ window._miPerfil = null;
 const CAT_ICONS = {limpieza:'🧹',plomeria:'🔧',pintura:'🎨',electricidad:'⚡',jardin:'🌿',mudanza:'📦',carpinteria:'🔨',tecnologia:'🖥️',mandados:'🛵',generico:'📋'};
 const TELEFONO_RE = /(\+?54\s?)?(\(?\d{2,4}\)?[\s\-]?)?\d{3,4}[\s\-]?\d{4}|\d{10,11}|cel[^\s]*\s*:?\s*\d|\btel[^\s]*\s*:?\s*\d|whatsapp|wsp|[0-9]{7,}/gi;
 
-// ══ HELPER: resolver nombre real desde un registro de profiles ══
-// Retorna el nombre de profiles. Si está vacío o es el genérico "Usuario",
-// intenta formatear el email como nombre más útil.
+// ══ HELPER: resolver nombre desde profiles o metadata de auth ══
+// Prioridad: 1) nombre en profiles (si no es vacío/Usuario)
+//            2) email formateado (si tiene separadores)
+//            3) lo que haya
 function resolverNombre(perfil, emailFallback) {
   if (!perfil && !emailFallback) return null;
   const nombre = (perfil?.nombre || '').trim();
   const esVacio = !nombre;
   const esGenerico = nombre === 'Usuario';
-  // Si tiene nombre real (no vacío y no el genérico), usarlo directo
   if (!esVacio && !esGenerico) return nombre;
-  // Sin nombre útil: intentar formatear el email
   const email = perfil?.email || emailFallback || '';
   const emailLocal = email.split('@')[0];
   if (!emailLocal) return esGenerico ? 'Usuario' : null;
-  // Solo formatear si el email parece un nombre (tiene puntos/guiones entre palabras)
-  // ej: "manuel.christensen" → "Manuel Christensen"
-  // ej: "manuchristensen14" → no tiene separadores → NO formatear, dejar "Usuario"
   const tieneSeparador = /[._\-]/.test(emailLocal);
   if (!tieneSeparador) return esGenerico ? 'Usuario' : emailLocal;
   return emailLocal.replace(/[._\-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+// Nombre del usuario logueado: primero user_metadata (fuente confiable de Google/auth),
+// luego profiles. Esto evita depender de que profiles esté actualizado.
+function nombreDelUsuarioLogueado() {
+  if (!currentUser) return 'Usuario';
+  return currentUser.user_metadata?.full_name
+    || currentUser.user_metadata?.nombre
+    || resolverNombre(window._miPerfil, currentUser.email)
+    || currentUser.email?.split('@')[0]?.replace(/[._\-]/g, ' ')?.replace(/\b\w/g, c => c.toUpperCase())
+    || 'Usuario';
 }
 
 // ══ INIT ══
@@ -455,17 +462,14 @@ function resolverNombre(perfil, emailFallback) {
     try {
       const { data: mp } = await db.from('profiles').select('nombre,avatar_url,email').eq('id', miUserId).maybeSingle();
       window._miPerfil = mp || {};
-      // Siempre inyectar el email desde auth si no está en profiles — es la clave para resolver el nombre
       if (!window._miPerfil.email && currentUser?.email) {
         window._miPerfil.email = currentUser.email;
         db.from('profiles').upsert({ id: miUserId, email: currentUser.email }).then(() => {});
       }
-      // Pre-resolver el nombre (usa email para formatear si nombre es "Usuario" o vacío)
-      window._miPerfil._nombreResuelto = resolverNombre(window._miPerfil) || currentUser?.email?.split('@')[0]?.replace(/[._\-]/g, ' ')?.replace(/\b\w/g, c => c.toUpperCase()) || 'Usuario';
+      // _nombreResuelto usa user_metadata como fuente primaria (igual que perfil.html)
+      // Se calcula después de definir nombreDelUsuarioLogueado()
     } catch(e) {
-      // Fallback total: formatear email directo de auth
-      const emailLocal = currentUser?.email?.split('@')[0] || '';
-      window._miPerfil = { email: currentUser?.email, _nombreResuelto: emailLocal.replace(/[._\-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'Usuario' };
+      window._miPerfil = { email: currentUser?.email };
     }
   }
 
@@ -482,13 +486,16 @@ function irAlPerfil(e) {
 // ══ CARGAR TAREA ══
 async function cargarTarea() {
   try {
+    // Ahora que todas las funciones están definidas, calcular el nombre del usuario logueado
+    if (window._miPerfil) {
+      window._miPerfil._nombreResuelto = nombreDelUsuarioLogueado();
+    }
     const { data, error } = await db.from('tareas').select('*').eq('id', TAREA_ID).single();
     if (error || !data) { document.getElementById('h-titulo').textContent = 'No se encontró esta tarea'; return; }
     tareaData = data;
     autorId = data.user_id;
     esAutor = miUserId && miUserId === data.user_id;
     renderTarea(data);
-    // Esperar el perfil del autor antes de que cargarPreguntas lo necesite
     await cargarPerfilAutor(data.user_id);
   } catch(e) { console.error(e); }
 }
@@ -710,10 +717,22 @@ async function cargarPerfilAutor(uid) {
   const nomEl = document.getElementById('h-autor-nombre');
   try {
     const { data } = await db.from('profiles').select('nombre,avatar_url,email').eq('id', uid).maybeSingle();
-    // Si el usuario logueado ES el autor, tenemos sus datos completos en currentUser
-    const emailFallback = (esAutor && currentUser?.email) ? currentUser.email : null;
-    const nombre = resolverNombre(data, emailFallback) || 'Usuario';
-    const foto = data?.avatar_url || null;
+    // Si soy el autor, mi nombre real viene de auth (igual que perfil.html)
+    // Si soy visitante, usar lo que hay en profiles
+    let nombre;
+    if (esAutor) {
+      nombre = nombreDelUsuarioLogueado();
+      // Guardar nombre correcto en DB si profiles tiene "Usuario" o vacío
+      const nombreEnDB = data?.nombre || '';
+      if (!nombreEnDB || nombreEnDB === 'Usuario') {
+        const updates = { nombre };
+        if (!data?.email && currentUser?.email) updates.email = currentUser.email;
+        db.from('profiles').upsert({ id: uid, ...updates }).then(() => {});
+      }
+    } else {
+      nombre = resolverNombre(data) || 'Usuario';
+    }
+    const foto = data?.avatar_url || (esAutor ? (currentUser?.user_metadata?.avatar_url || currentUser?.user_metadata?.picture || null) : null);
     nomEl.textContent = nombre;
     nomEl.style.cursor = 'pointer';
     nomEl.onclick = () => window.location.href = 'perfil.html?id=' + uid;
@@ -723,22 +742,6 @@ async function cargarPerfilAutor(uid) {
     window._autorNombre = nombre;
     window._autorFoto = foto;
     window._autorIni = nombre.charAt(0).toUpperCase();
-    // Si soy el autor y mis datos en profiles están incompletos, actualizarlos en background
-    if (esAutor) {
-      const updates = {};
-      if (!data?.email && emailFallback) updates.email = emailFallback;
-      const nombreEnDB = data?.nombre || '';
-      const nombreIncompleto = !nombreEnDB || nombreEnDB === 'Usuario';
-      if (nombreIncompleto) {
-        const nombreAuth = currentUser?.user_metadata?.full_name
-          || currentUser?.user_metadata?.nombre
-          || null;
-        if (nombreAuth) updates.nombre = nombreAuth;
-      }
-      if (Object.keys(updates).length > 0) {
-        db.from('profiles').upsert({ id: uid, ...updates }).then(() => {});
-      }
-    }
   } catch(e) {
     nomEl.textContent = '?';
     avEl.textContent = '?';
@@ -998,10 +1001,11 @@ function agregarPreguntaDOM(preg, resp, perfil, replicas, profsMap) {
   document.getElementById('qa-empty').style.display = 'none';
 
   const esPropia = miUserId && preg.user_id === miUserId;
-  // resolverNombre primero; si es propia y no hay perfil, usar _miPerfil
-  const nombrePerfil = resolverNombre(perfil);
-  const nombre = nombrePerfil
-    || (esPropia ? (window._miPerfil?._nombreResuelto || window._miPerfil?.nombre || currentUser?.user_metadata?.nombre || currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Usuario') : 'Usuario');
+  // Para preguntas propias: usar nombre de auth directamente (fuente confiable)
+  // Para preguntas ajenas: usar lo que hay en profiles
+  const nombre = esPropia
+    ? nombreDelUsuarioLogueado()
+    : (resolverNombre(perfil) || 'Usuario');
   const foto = perfil?.avatar_url
     || (esPropia ? (window._miPerfil?.avatar_url || currentUser?.user_metadata?.avatar_url || currentUser?.user_metadata?.picture || null) : null);
   const ini = nombre.charAt(0).toUpperCase();
@@ -1161,7 +1165,7 @@ async function enviarPregunta() {
 
     // Agregar al DOM con nombre real del perfil
     const perfil = {
-      nombre: window._miPerfil?._nombreResuelto || window._miPerfil?.nombre || currentUser.user_metadata?.nombre || currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Usuario',
+      nombre: nombreDelUsuarioLogueado(),
       avatar_url: window._miPerfil?.avatar_url || currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture || null
     };
     agregarPreguntaDOM(data, null, perfil);
@@ -1211,7 +1215,7 @@ async function enviarReplica(pregId) {
     const replicasEl = document.getElementById('replicas-' + pregId);
     if (replicasEl) {
       const hora = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-      const miNombre = window._miPerfil?._nombreResuelto || window._miPerfil?.nombre || currentUser?.user_metadata?.nombre || currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Usuario';
+      const miNombre = nombreDelUsuarioLogueado();
       const miFoto = window._miPerfil?.avatar_url || currentUser?.user_metadata?.avatar_url || currentUser?.user_metadata?.picture || null;
       const miIni = miNombre.charAt(0).toUpperCase();
       const replicaAvHtml = miFoto
@@ -1429,17 +1433,7 @@ async function enviarOferta() {
 let _miNombreReal = null;
 async function getMiNombreReal() {
   if (_miNombreReal) return _miNombreReal;
-  // Usar el perfil ya cargado en el init si está disponible
-  if (window._miPerfil?.nombre) { _miNombreReal = window._miPerfil.nombre; return _miNombreReal; }
-  try {
-    const { data } = await db.from('profiles').select('nombre,email').eq('id', currentUser.id).maybeSingle();
-    _miNombreReal = resolverNombre(data) || currentUser.user_metadata?.nombre || currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Usuario';
-  } catch(e) {
-    _miNombreReal = currentUser.user_metadata?.nombre
-      || currentUser.user_metadata?.full_name
-      || currentUser.email?.split('@')[0]
-      || 'Usuario';
-  }
+  _miNombreReal = nombreDelUsuarioLogueado();
   return _miNombreReal;
 }
 
