@@ -118,6 +118,24 @@
 
 /* Reviews */
 .reviews-empty{text-align:center;padding:22px;color:var(--suave)}
+.review-item{padding:16px 0;border-bottom:1.5px solid var(--borde)}
+.review-item:last-child{border-bottom:none;padding-bottom:0}
+.review-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.review-av{width:36px;height:36px;border-radius:50%;background:var(--fondo);border:2px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:900;color:var(--suave);overflow:hidden;flex-shrink:0;text-decoration:none;color:var(--suave)}
+.review-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.review-meta{flex:1}
+.review-autor{font-size:.85rem;font-weight:900;color:var(--texto)}
+.review-fecha{font-size:.72rem;font-weight:700;color:var(--suave)}
+.review-stars{display:flex;gap:2px;margin-bottom:6px}
+.star{font-size:1rem;color:#D1D5DB}
+.star.on{color:#F59E0B}
+.review-coment{font-size:.85rem;font-weight:700;color:var(--texto);line-height:1.6}
+.review-tarea{font-size:.72rem;font-weight:700;color:var(--suave);margin-top:4px}
+.rating-summary{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1.5px solid var(--borde)}
+.rating-big{font-size:2.8rem;font-weight:900;color:var(--texto);line-height:1}
+.rating-info{flex:1}
+.rating-stars-row{display:flex;gap:3px;margin-bottom:3px}
+.rating-count{font-size:.78rem;font-weight:700;color:var(--suave)}
 
 /* BANNER ONBOARDING NOMBRE */
 .banner-nombre{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1.5px solid #FCD34D;border-radius:var(--radio-lg);padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:14px;box-shadow:var(--sombra)}
@@ -301,10 +319,13 @@
     <!-- REVIEWS -->
     <div class="sec-card">
       <div class="sec-header"><div class="sec-titulo">Reseñas</div></div>
-      <div class="reviews-empty">
-        <div style="font-size:1.6rem;margin-bottom:10px">⭐</div>
-        <div style="font-size:.9rem;font-weight:800;color:var(--texto);margin-bottom:5px">Sin reseñas todavía</div>
-        <div style="font-size:.8rem;font-weight:700;color:var(--suave)">Las reseñas aparecen después de completar tareas.</div>
+      <div id="reviews-container">
+        <div class="reviews-empty" id="reviews-empty">
+          <div style="font-size:1.6rem;margin-bottom:10px">⭐</div>
+          <div style="font-size:.9rem;font-weight:800;color:var(--texto);margin-bottom:5px">Sin reseñas todavía</div>
+          <div style="font-size:.8rem;font-weight:700;color:var(--suave)">Las reseñas aparecen después de completar tareas.</div>
+        </div>
+        <div id="reviews-lista"></div>
       </div>
     </div>
 
@@ -354,6 +375,7 @@ let idiomasSelTemp = [];
 
   await cargarPerfil(session.user);
   await cargarStats();
+  await cargarReviews();
   mostrarBotones();
   if (esMiPerfil) activarEdicion();
 })();
@@ -371,38 +393,28 @@ async function cargarPerfil(authUser) {
     }
 
     if (!p && esMiPerfil) {
-      // Primer acceso: crear perfil usando datos de Google/auth
+      // Primer acceso: crear perfil con datos básicos
       const nombre = authUser?.user_metadata?.nombre
         || authUser?.user_metadata?.full_name
         || nombreDesdeEmail(authUser?.email)
         || 'Usuario';
-      const avatar = authUser?.user_metadata?.avatar_url
-        || authUser?.user_metadata?.picture
-        || null;
       const zona = authUser?.user_metadata?.zona || null;
 
       const { data: nuevo } = await db.from('profiles').insert({
-        id: miUserId, nombre, email: authUser?.email,
-        avatar_url: avatar, zona
+        id: miUserId, nombre, email: authUser?.email, zona
       }).select().single();
 
-      perfilData = nuevo || { nombre, avatar_url: avatar };
+      perfilData = nuevo || { nombre };
     } else {
       if (p && esMiPerfil && authUser) {
         const googleNombre = authUser.user_metadata?.full_name || authUser.user_metadata?.nombre;
-        const googleFoto = authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture;
-
         const updates = {};
-        if (!p.avatar_url && googleFoto) updates.avatar_url = googleFoto;
-        // Siempre guardar el email si no está en profiles (clave para resolver nombres en otras páginas)
         if (!p.email && authUser?.email) updates.email = authUser.email;
-        // Si el nombre es "Usuario", el prefijo del email sin formatear, o está vacío → intentar mejorar
         const nombreEsDefault = !p.nombre || p.nombre === 'Usuario' || p.nombre === authUser?.email?.split('@')[0];
         if (nombreEsDefault) {
           const nombreMejor = googleNombre || nombreDesdeEmail(authUser?.email);
           if (nombreMejor && nombreMejor !== 'Usuario') updates.nombre = nombreMejor;
         }
-
         if (Object.keys(updates).length > 0) {
           await db.from('profiles').update(updates).eq('id', miUserId);
           perfilData = { ...p, ...updates };
@@ -440,9 +452,9 @@ function renderPerfil(p) {
   // Zona
   document.getElementById('perf-zona').innerHTML = '📍 ' + (p.zona || 'Argentina');
 
-  // Avatar
+  // Avatar — usar foto_url (Storage) o foto de Google como fallback
   const avEl = document.getElementById('perf-av');
-  const foto = p.avatar_url;
+  const foto = p.foto_url || null;
   if (foto) { avEl.innerHTML = `<img src="${foto}" alt="${nombre}">`; }
   else { avEl.textContent = nombre.charAt(0).toUpperCase(); }
 
@@ -512,18 +524,25 @@ async function onFotoSeleccionada(input) {
 
   showToast('Subiendo foto...');
   try {
-    // Convertir a base64 y guardar como data URL en el perfil
-    // (sin storage de Supabase — guardamos en avatar_url como URL o usamos un servicio)
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const dataUrl = e.target.result;
-      // Para producción usarías Supabase Storage. Por ahora guardamos la URL de datos
-      const avEl = document.getElementById('perf-av');
-      avEl.innerHTML = `<img src="${dataUrl}" alt="Foto">`;
-      perfilData.avatar_url = dataUrl;
-      await guardarCampo({ avatar_url: dataUrl });
-    };
-    reader.readAsDataURL(file);
+    // Subir a Supabase Storage bucket "Fotos"
+    const ext = file.name.split('.').pop();
+    const path = `avatars/${miUserId}.${ext}`;
+    const { error: upErr } = await db.storage.from('Fotos').upload(path, file, { upsert: true });
+    if (upErr) throw upErr;
+
+    // Obtener URL pública
+    const { data: urlData } = db.storage.from('Fotos').getPublicUrl(path);
+    const url = urlData.publicUrl + '?t=' + Date.now(); // cache-bust
+
+    // Guardar en profiles.foto_url
+    const { error: dbErr } = await db.from('profiles').upsert({ id: miUserId, foto_url: url });
+    if (dbErr) throw dbErr;
+
+    // Mostrar en UI
+    const avEl = document.getElementById('perf-av');
+    avEl.innerHTML = `<img src="${url}" alt="Foto">`;
+    perfilData.foto_url = url;
+    showToast('✅ Foto actualizada');
   } catch(e) {
     showToast('Error al subir foto: ' + e.message);
   }
@@ -721,6 +740,75 @@ function actualizarChipsEdit(containerId, opciones, seleccionados, toggleFn, cus
 function mostrarBannerNombre() {
   const b = document.getElementById('banner-nombre');
   if (b) b.style.display = 'block';
+}
+
+// ══ REVIEWS ══
+function starsHtml(rating, size) {
+  return [1,2,3,4,5].map(i =>
+    `<span class="star${i <= rating ? ' on' : ''}" style="font-size:${size||'1rem'}"">★</span>`
+  ).join('');
+}
+
+async function cargarReviews() {
+  try {
+    const { data: revs } = await db.from('reviews')
+      .select('*').eq('destinatario_id', perfilId)
+      .order('created_at', { ascending: false });
+
+    const lista = document.getElementById('reviews-lista');
+    const empty = document.getElementById('reviews-empty');
+
+    if (!revs || !revs.length) { empty.style.display = 'block'; return; }
+
+    // Calcular promedio
+    const avg = (revs.reduce((s,r) => s + r.rating, 0) / revs.length).toFixed(1);
+    document.getElementById('stat-rating').textContent = avg;
+
+    empty.style.display = 'none';
+
+    // Cargar perfiles de los autores
+    const autorIds = [...new Set(revs.map(r => r.autor_id))];
+    const { data: autores } = await db.from('profiles')
+      .select('id,nombre,foto_url,email').in('id', autorIds);
+    const autMap = {};
+    (autores || []).forEach(a => autMap[a.id] = a);
+
+    // Resumen de rating
+    lista.innerHTML = `
+      <div class="rating-summary">
+        <div class="rating-big">${avg}</div>
+        <div class="rating-info">
+          <div class="rating-stars-row">${starsHtml(Math.round(avg), '1.2rem')}</div>
+          <div class="rating-count">${revs.length} reseña${revs.length !== 1 ? 's' : ''}</div>
+        </div>
+      </div>`;
+
+    revs.forEach(r => {
+      const aut = autMap[r.autor_id] || {};
+      const autNombre = aut.nombre && aut.nombre !== 'Usuario'
+        ? aut.nombre
+        : (aut.email?.split('@')[0]?.replace(/[._\-]/g,' ')?.replace(/\b\w/g,c=>c.toUpperCase()) || 'Usuario');
+      const autFoto = aut.foto_url || null;
+      const autIni = autNombre.charAt(0).toUpperCase();
+      const fecha = new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'});
+      const avHtml = autFoto
+        ? `<a href="perfil.html?id=${r.autor_id}" class="review-av"><img src="${autFoto}" alt="${escH(autNombre)}"></a>`
+        : `<a href="perfil.html?id=${r.autor_id}" class="review-av">${autIni}</a>`;
+
+      lista.innerHTML += `
+        <div class="review-item">
+          <div class="review-header">
+            ${avHtml}
+            <div class="review-meta">
+              <div class="review-autor">${escH(autNombre)}</div>
+              <div class="review-fecha">${fecha}</div>
+            </div>
+          </div>
+          <div class="review-stars">${starsHtml(r.rating)}</div>
+          ${r.comentario ? `<div class="review-coment">${escH(r.comentario)}</div>` : ''}
+        </div>`;
+    });
+  } catch(e) { console.warn('Error reviews:', e); }
 }
 
 // ══ GUARDAR ══
