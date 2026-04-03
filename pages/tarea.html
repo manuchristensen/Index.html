@@ -460,15 +460,15 @@ function nombreDelUsuarioLogueado() {
   // Cargar el perfil del usuario logueado (nombre real desde profiles)
   if (miUserId) {
     try {
-      const { data: mp } = await db.from('profiles').select('nombre,avatar_url,email').eq('id', miUserId).maybeSingle();
+      const { data: mp, error: mpErr } = await db.from('profiles').select('nombre,avatar_url,email').eq('id', miUserId).maybeSingle();
+      console.log('[ChambaYa] _miPerfil | data:', mp, '| error:', mpErr, '| user_metadata:', currentUser?.user_metadata);
       window._miPerfil = mp || {};
       if (!window._miPerfil.email && currentUser?.email) {
         window._miPerfil.email = currentUser.email;
         db.from('profiles').upsert({ id: miUserId, email: currentUser.email }).then(() => {});
       }
-      // _nombreResuelto usa user_metadata como fuente primaria (igual que perfil.html)
-      // Se calcula después de definir nombreDelUsuarioLogueado()
     } catch(e) {
+      console.error('[ChambaYa] _miPerfil error:', e);
       window._miPerfil = { email: currentUser?.email };
     }
   }
