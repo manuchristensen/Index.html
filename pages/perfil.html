@@ -6,8 +6,10 @@
 <title>ChambaYa — Perfil</title>
 <link rel="stylesheet" href="../fonts.css">
 <link rel="stylesheet" href="../styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-.pf-wrap { max-width:1100px; margin:0 auto; padding:40px 32px 120px; display:grid; grid-template-columns:300px 1fr; gap:28px; align-items:start; }
+.pf-wrap { max-width:1100px; margin:0 auto; padding:40px 32px 120px; display:grid; grid-template-columns:300px 1fr; gap:28px; align-items:start; font-family:'DM Sans','Nunito',sans-serif; }
 .pf-left  { display:flex; flex-direction:column; gap:20px; }
 .pf-right { display:flex; flex-direction:column; gap:20px; }
 
@@ -26,22 +28,22 @@
 
 /* Nombre */
 .pf-nombre-wrap { margin-bottom:6px; width:100%; }
-.pf-nombre { font-size:1.6rem; font-weight:900; color:var(--texto); cursor:default; line-height:1.2; }
+.pf-nombre { font-size:1.75rem; font-weight:900; color:var(--texto); cursor:default; line-height:1.2; }
 
 /* Online */
-.pf-online { display:inline-flex; align-items:center; gap:6px; font-size:.8rem; font-weight:700; color:var(--suave); margin-bottom:14px; }
-.pf-online-dot { width:8px; height:8px; border-radius:50%; background:#9CA3AF; flex-shrink:0; }
+.pf-online { display:inline-flex; align-items:center; gap:6px; font-size:.88rem; font-weight:700; color:var(--suave); margin-bottom:14px; }
+.pf-online-dot { width:9px; height:9px; border-radius:50%; background:#9CA3AF; flex-shrink:0; }
 .pf-online-dot.verde { background:#10B981; }
 
 /* Meta */
 .pf-meta { display:flex; flex-direction:column; gap:9px; width:100%; padding:16px 0; border-top:1.5px solid var(--borde); border-bottom:1.5px solid var(--borde); margin-bottom:18px; text-align:left; }
-.pf-meta-row { display:flex; align-items:center; gap:9px; font-size:.86rem; font-weight:700; color:var(--suave); flex-wrap:wrap; }
+.pf-meta-row { display:flex; align-items:center; gap:9px; font-size:.92rem; font-weight:700; color:var(--suave); }
 .pf-meta-ico { font-size:1rem; flex-shrink:0; }
 
 /* Zona editable */
 .pf-zona-txt { cursor:pointer; }
 .pf-zona-txt:hover { color:var(--verde-o); text-decoration:underline; }
-.zona-edit-ico { display:none; font-size:.7rem; color:var(--verde-o); cursor:pointer; }
+.zona-edit-ico { display:none; font-size:.75rem; color:var(--verde-o); cursor:pointer; flex-shrink:0; }
 .pf-zona-edit { display:none; width:100%; margin-top:4px; }
 .pf-zona-input { width:100%; border:1.5px solid var(--verde); border-radius:8px; padding:5px 10px; font-family:'Nunito',sans-serif; font-size:.86rem; font-weight:700; color:var(--texto); outline:none; }
 .pf-zona-btns { display:flex; gap:6px; margin-top:6px; }
@@ -50,29 +52,29 @@
 
 /* Stats */
 .pf-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; width:100%; margin-bottom:18px; }
-.pf-stat { background:var(--fondo); border-radius:var(--radio); padding:10px 6px; text-align:center; }
-.pf-stat-num { font-size:1.25rem; font-weight:900; color:var(--texto); line-height:1.1; }
-.pf-stat-lbl { font-size:.62rem; font-weight:800; color:var(--suave); text-transform:uppercase; letter-spacing:.4px; margin-top:2px; }
+.pf-stat { background:var(--fondo); border-radius:var(--radio); padding:12px 6px; text-align:center; }
+.pf-stat-num { font-size:1.35rem; font-weight:900; color:var(--texto); line-height:1.1; }
+.pf-stat-lbl { font-size:.65rem; font-weight:800; color:var(--suave); text-transform:uppercase; letter-spacing:.5px; margin-top:3px; }
 
 /* Secciones card */
-.pf-sec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-.pf-sec-titulo { font-size:1.05rem; font-weight:900; color:var(--texto); }
-.btn-sec-edit { padding:5px 12px; border:1.5px solid var(--borde); border-radius:var(--radio-pill); background:var(--blanco); font-family:'Nunito',sans-serif; font-weight:800; font-size:.75rem; cursor:pointer; color:var(--suave); transition:all .2s; display:none; }
+.pf-sec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.pf-sec-titulo { font-size:1.15rem; font-weight:900; color:var(--texto); }
+.btn-sec-edit { padding:6px 14px; border:1.5px solid var(--borde); border-radius:var(--radio-pill); background:var(--blanco); font-family:'Nunito',sans-serif; font-weight:800; font-size:.8rem; cursor:pointer; color:var(--suave); transition:all .2s; display:none; }
 .btn-sec-edit:hover { border-color:var(--verde); color:var(--verde-o); }
 
 /* Bio */
-.pf-bio-txt { font-size:.95rem; font-weight:700; color:var(--texto); line-height:1.75; }
-.pf-bio-empty { font-size:.9rem; font-weight:700; color:var(--suave); font-style:italic; }
+.pf-bio-txt { font-size:1rem; font-weight:700; color:var(--texto); line-height:1.8; }
+.pf-bio-empty { font-size:.95rem; font-weight:700; color:var(--suave); font-style:italic; }
 .bio-textarea { width:100%; border:2px solid var(--borde); border-radius:var(--radio); padding:13px 15px; font-family:'Nunito',sans-serif; font-size:.9rem; font-weight:700; color:var(--texto); resize:vertical; outline:none; min-height:110px; transition:border-color .2s; }
 .bio-textarea:focus { border-color:var(--verde); box-shadow:0 0 0 3px rgba(0,201,107,.1); }
 
-/* Chips */
-.chips-wrap { display:flex; flex-wrap:wrap; gap:8px; }
-.chip { padding:6px 14px; border:1.5px solid var(--borde); border-radius:var(--radio-pill); font-size:.8rem; font-weight:800; color:var(--suave); cursor:pointer; background:var(--fondo); transition:all .18s; user-select:none; }
-.chip:hover { border-color:var(--verde); color:var(--verde-o); }
-.chip.sel { background:var(--verde-c); border-color:var(--verde); color:var(--verde-o); }
+/* Chips — estilo Airtasker: fondo gris, sin borde, texto oscuro */
+.chips-wrap { display:flex; flex-wrap:wrap; gap:10px; }
+.chip { padding:9px 18px; border:2px solid transparent; border-radius:var(--radio-pill); font-size:.9rem; font-weight:700; color:#374151; cursor:pointer; background:#F1F5F9; transition:all .18s; user-select:none; }
+.chip:hover { background:#E2E8F0; color:#111827; }
+.chip.sel { background:#F0FDF9; border-color:var(--verde); color:var(--verde-o); font-weight:800; }
 .chip.sel.readonly { cursor:default; }
-.chip.sel.readonly:hover { border-color:var(--verde); color:var(--verde-o); }
+.chip.sel.readonly:hover { background:#F0FDF9; border-color:var(--verde); color:var(--verde-o); }
 
 /* Agregar custom */
 .agregar-custom { display:flex; gap:8px; margin-top:12px; }
@@ -404,9 +406,16 @@ let ocupSel = [], espSel = [], idiomasSel = [];
   if (!perfilId) perfilId = miUserId;
   esMiPerfil = (perfilId === miUserId);
 
-  // Online dot — last_sign_in solo disponible para el propio usuario
-  if (esMiPerfil && session.user.last_sign_in_at) {
-    setOnlineText(session.user.last_sign_in_at);
+  // Online dot — para el propio usuario, usar last_sign_in_at (el login real)
+  // Para visitantes lo calculamos desde updated_at del perfil en renderPerfil()
+  if (esMiPerfil) {
+    // Actualizar updated_at ahora para que visitantes vean actividad reciente
+    db.from('profiles').update({ updated_at: new Date().toISOString() }).eq('id', miUserId).then(function(){});
+    // Mostrar como en línea ahora porque acabamos de cargar la sesión
+    var dot = document.getElementById('online-dot');
+    if (dot) dot.classList.add('verde');
+    var el = document.getElementById('pf-online-txt');
+    if (el) el.textContent = 'En línea ahora';
   }
 
   await cargarPerfil(session.user);
