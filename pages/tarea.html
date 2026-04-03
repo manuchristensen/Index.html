@@ -460,7 +460,7 @@ function nombreDelUsuarioLogueado() {
   // Cargar el perfil del usuario logueado (nombre real desde profiles)
   if (miUserId) {
     try {
-      const { data: mp, error: mpErr } = await db.from('profiles').select('nombre,avatar_url,email').eq('id', miUserId).maybeSingle();
+      const { data: mp, error: mpErr } = await db.from('profiles').select('*').eq('id', miUserId).maybeSingle();
       console.log('[ChambaYa] _miPerfil | data:', mp, '| error:', mpErr, '| user_metadata:', currentUser?.user_metadata);
       window._miPerfil = mp || {};
       if (!window._miPerfil.email && currentUser?.email) {
@@ -635,7 +635,7 @@ async function cargarInfoAsignado(tareaId, miId) {
     if (!oferta) return;
 
     const { data: perfil } = await db.from('profiles')
-      .select('nombre,avatar_url,email').eq('id', oferta.tasker_id).maybeSingle();
+      .select('*').eq('id', oferta.tasker_id).maybeSingle();
 
     // Si el usuario logueado ES el tasker, tenemos su email en currentUser
     const emailFallbackTasker = (miUserId === oferta.tasker_id && currentUser?.email) ? currentUser.email : null;
@@ -716,7 +716,7 @@ async function cargarPerfilAutor(uid) {
   const avEl = document.getElementById('h-autor-av');
   const nomEl = document.getElementById('h-autor-nombre');
   try {
-    const { data, error } = await db.from('profiles').select('nombre,avatar_url,email').eq('id', uid).maybeSingle();
+    const { data, error } = await db.from('profiles').select('*').eq('id', uid).maybeSingle();
     console.log('[ChambaYa] cargarPerfilAutor uid:', uid, '| data:', data, '| error:', error);
     let nombre;
     if (esAutor) {
@@ -758,7 +758,7 @@ async function cargarOfertas() {
     const ids = data.map(o => o.tasker_id).filter(Boolean);
     let perfsMap = {};
     if (ids.length) {
-      const { data: profs } = await db.from('profiles').select('id,nombre,avatar_url,email').in('id', ids);
+      const { data: profs } = await db.from('profiles').select('*').in('id', ids);
       (profs || []).forEach(p => perfsMap[p.id] = p);
     }
 
@@ -934,7 +934,7 @@ async function cargarPreguntas() {
     // Asegurar que el perfil del autor esté cargado antes de renderizar respuestas
     if (!window._autorNombre && autorId) {
       try {
-        const { data: ap } = await db.from('profiles').select('nombre,avatar_url,email').eq('id', autorId).maybeSingle();
+        const { data: ap } = await db.from('profiles').select('*').eq('id', autorId).maybeSingle();
         if (ap) {
           window._autorNombre = resolverNombre(ap) || 'Usuario';
           window._autorFoto = ap.avatar_url || null;
@@ -976,7 +976,7 @@ async function cargarPreguntas() {
 
     // Cargar perfiles de quienes preguntaron + quienes replicaron (con email para resolverNombre)
     const allUserIds = [...new Set((todos || []).map(r => r.user_id).concat(pregs.map(p => p.user_id)))];
-    const { data: profs, error: eProfs } = await db.from('profiles').select('id,nombre,avatar_url,email').in('id', allUserIds);
+    const { data: profs, error: eProfs } = await db.from('profiles').select('*').in('id', allUserIds);
     console.log('[ChambaYa] profiles batch | ids:', allUserIds, '| data:', profs, '| error:', eProfs);
     const profsMap = {};
     (profs || []).forEach(p => profsMap[p.id] = p);
