@@ -124,9 +124,22 @@
 
 /* ══ SECCIONES CARD ══ */
 .pf-sec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.pf-sec-titulo { font-size: .72rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: var(--suave); }
+/* Títulos iguales a Sobre mí / Reseñas */
+.pf-sec-titulo { font-size: 1.05rem; font-weight: 900; color: var(--texto); }
 .btn-sec-edit { padding: 5px 12px; border: 1.5px solid var(--borde); border-radius: var(--radio-pill); background: var(--blanco); font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .75rem; cursor: pointer; color: var(--suave); transition: all .2s; display: none; }
 .btn-sec-edit:hover { border-color: var(--verde); color: var(--verde-o); }
+
+/* ══ MODAL EDITAR PERFIL ══ */
+.modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;padding:20px; }
+.modal-overlay.open { display:flex; }
+.modal-box { background:var(--blanco);border-radius:var(--radio-lg);padding:32px;width:100%;max-width:480px;box-shadow:var(--sombra-lg);animation:fadeUp .25s ease; }
+.modal-titulo { font-size:1.2rem;font-weight:900;color:var(--texto);margin-bottom:24px; }
+.modal-field { margin-bottom:20px; }
+.modal-label { display:block;font-size:.85rem;font-weight:900;color:var(--texto);margin-bottom:8px; }
+.modal-input { width:100%;border:2px solid var(--borde);border-radius:var(--radio);padding:11px 14px;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:700;color:var(--texto);outline:none;transition:border-color .2s; }
+.modal-input:focus { border-color:var(--verde);box-shadow:0 0 0 3px rgba(0,201,107,.1); }
+.modal-btns { display:flex;gap:10px;justify-content:flex-end;margin-top:24px; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
 .pf-bio { font-size: .92rem; font-weight: 700; color: var(--texto); line-height: 1.7; }
 .pf-bio-empty { font-size: .88rem; font-weight: 700; color: var(--suave); font-style: italic; }
@@ -296,11 +309,6 @@
             <button class="btn-zona-cancel" onclick="cancelarZona()">✕</button>
           </div>
         </div>
-        <!-- Ocupación -->
-        <div class="pf-meta-row">
-          <span class="pf-meta-ico">💼</span>
-          <span id="perf-ocupacion-mini">—</span>
-        </div>
       </div>
 
       <!-- Stats: 3 columnas -->
@@ -335,10 +343,10 @@
       <div id="ocup-edit" style="display:none">
         <div class="chips-wrap" id="ocup-chips-edit"></div>
         <div class="agregar-custom">
-          <input class="custom-input" id="ocup-custom-input" placeholder="Otro (máx 20 chars)" maxlength="20">
+          <input class="custom-input" id="ocup-custom-input" placeholder="Ej: Guardavidas (máx 25 chars)" maxlength="25">
           <button class="btn-agregar-custom" onclick="agregarCustomOcup()">+ Agregar</button>
         </div>
-        <div class="custom-hint">Podés seleccionar varias o agregar una personalizada</div>
+        <div class="custom-hint">Seleccioná varias o escribí tu rubro si no está en la lista</div>
         <div class="edit-btns">
           <button class="btn-save" onclick="guardarOcup()">💾 Guardar</button>
           <button class="btn-cancel-edit" onclick="cancelarOcup()">Cancelar</button>
@@ -349,20 +357,20 @@
     <!-- Especialidades -->
     <div class="pf-card">
       <div class="pf-sec-header">
-        <div class="pf-sec-titulo">Especialidades</div>
+        <div class="pf-sec-titulo">Disponibilidad y condiciones</div>
         <button class="btn-sec-edit" id="btn-edit-esp" onclick="editarEsp()">✏️ Editar</button>
       </div>
       <div id="esp-vista">
         <div class="chips-wrap" id="esp-chips-vista"></div>
-        <div class="pf-bio-empty" id="esp-empty">Sin especialidades.</div>
+        <div class="pf-bio-empty" id="esp-empty">Sin condiciones especificadas.</div>
       </div>
       <div id="esp-edit" style="display:none">
         <div class="chips-wrap" id="esp-chips-edit"></div>
         <div class="agregar-custom">
-          <input class="custom-input" id="esp-custom-input" placeholder="Otra (máx 20 chars)" maxlength="20">
+          <input class="custom-input" id="esp-custom-input" placeholder="Otra condición (máx 25 chars)" maxlength="25">
           <button class="btn-agregar-custom" onclick="agregarCustomEsp()">+ Agregar</button>
         </div>
-        <div class="custom-hint">Seleccioná las que aplican o agregá una propia</div>
+        <div class="custom-hint">Seleccioná varias o agregá una propia</div>
         <div class="edit-btns">
           <button class="btn-save" onclick="guardarEsp()">💾 Guardar</button>
           <button class="btn-cancel-edit" onclick="cancelarEsp()">Cancelar</button>
@@ -382,6 +390,11 @@
       </div>
       <div id="idiomas-edit" style="display:none">
         <div class="chips-wrap" id="idiomas-chips-edit"></div>
+        <div class="agregar-custom">
+          <input class="custom-input" id="idiomas-custom-input" placeholder="Otro idioma (máx 25 chars)" maxlength="25">
+          <button class="btn-agregar-custom" onclick="agregarCustomIdioma()">+ Agregar</button>
+        </div>
+        <div class="custom-hint">Seleccioná varios o agregá uno propio</div>
         <div class="edit-btns">
           <button class="btn-save" onclick="guardarIdiomas()">💾 Guardar</button>
           <button class="btn-cancel-edit" onclick="cancelarIdiomas()">Cancelar</button>
@@ -428,6 +441,25 @@
   </div><!-- /pf-right -->
 </div>
 
+<!-- ══ MODAL EDITAR PERFIL ══ -->
+<div class="modal-overlay" id="modal-editar" onclick="cerrarModal(event)">
+  <div class="modal-box">
+    <div class="modal-titulo">✏️ Editar perfil</div>
+    <div class="modal-field">
+      <label class="modal-label">Nombre completo</label>
+      <input type="text" class="modal-input" id="modal-nombre" maxlength="40" placeholder="Tu nombre completo">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Ubicación</label>
+      <input type="text" class="modal-input" id="modal-zona" maxlength="60" placeholder="Ej: Mar del Plata, Buenos Aires">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel-edit" onclick="document.getElementById('modal-editar').classList.remove('open')">Cancelar</button>
+      <button class="btn-save" onclick="guardarModal()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ HIRE BAR — sticky bottom, solo visitantes ══ -->
 <div class="hire-bar" id="hire-bar">
   <div class="hire-bar-txt">
@@ -452,7 +484,7 @@ let perfilNombreCompleto = '';
 
 const OCUPACIONES    = ['Plomero/a','Electricista','Pintor/a','Limpieza','Jardinero/a','Carpintero/a','Mudanzas','Tecnología','Delivery/Mandados','Fotografía','Marketing','Gastronomía','Cuidado de niños','Cuidado de mascotas','Entrenador/a','Peluquería','Educación/Tutorías','Construcción','Mecánico/a','Diseño'];
 const ESPECIALIDADES = ['Trabajos urgentes','Fines de semana','Disponibilidad 24h','Trabajo en altura','Con vehículo propio','Con herramientas','Con materiales','Factura A/B','+5 años experiencia','Trabajo en equipo','Solo/a','Zona CABA','Zona GBA','Todo el país','Trabajo remoto','Lun a Vie'];
-const IDIOMAS        = ['🇦🇷 Español','🇺🇸 Inglés','🇧🇷 Portugués','🇫🇷 Francés','🇩🇪 Alemán','🇮🇹 Italiano','🇨🇳 Chino','🇷🇺 Ruso','🌐 Otro'];
+const IDIOMAS        = ['🇦🇷 Español','🇺🇸 Inglés','🇧🇷 Portugués','🇫🇷 Francés','🇩🇪 Alemán','🇮🇹 Italiano','🇨🇳 Chino','🇷🇺 Ruso'];
 let ocupSelTemp = [], espSelTemp = [], idiomasSelTemp = [];
 
 // ══ INIT ══
@@ -463,6 +495,11 @@ let ocupSelTemp = [], espSelTemp = [], idiomasSelTemp = [];
   if (!perfilId) perfilId = miUserId;
   esMiPerfil = perfilId === miUserId;
 
+  // Dot de actividad: last_sign_in_at solo disponible para el propio usuario
+  if (esMiPerfil && session.user.last_sign_in_at) {
+    calcularOnline(session.user.last_sign_in_at);
+  }
+
   await cargarPerfil(session.user);
   await cargarStats();
   await cargarReviews();
@@ -471,15 +508,30 @@ let ocupSelTemp = [], espSelTemp = [], idiomasSelTemp = [];
   else mostrarHireBar();
 })();
 
+// ══ ONLINE STATUS — basado en last_sign_in_at real ══
+function calcularOnline(lastSignIn) {
+  const diff = Date.now() - new Date(lastSignIn).getTime();
+  const mins = Math.floor(diff / 60000);
+  const hrs  = Math.floor(mins / 60);
+  const days = Math.floor(hrs / 24);
+  let txt;
+  const dot = document.getElementById('online-dot');
+  if (mins < 15)      { txt = 'En línea ahora'; dot?.classList.add('verde'); }
+  else if (mins < 60) txt = `Activo hace ${mins} min`;
+  else if (hrs < 24)  txt = `Activo hace ${hrs}h`;
+  else if (days < 7)  txt = `Activo hace ${days} día${days > 1 ? 's' : ''}`;
+  else                txt = `Activo hace ${Math.floor(days/7)} semana${Math.floor(days/7) > 1 ? 's' : ''}`;
+  const el = document.getElementById('pf-online-txt');
+  if (el) el.textContent = txt;
+}
+
 // ══ HIRE BAR ══
 function mostrarHireBar() {
   document.getElementById('hire-bar').style.display = 'flex';
 }
-
 function irAPublicar() {
   const primerNombre = perfilNombreCompleto.split(' ')[0] || 'este tasker';
-  const url = `publicar.html?tasker_id=${encodeURIComponent(perfilId)}&tasker_nombre=${encodeURIComponent(primerNombre)}&tasker_foto=${encodeURIComponent(perfilData.foto_url || '')}`;
-  window.location.href = url;
+  window.location.href = `publicar.html?tasker_id=${encodeURIComponent(perfilId)}&tasker_nombre=${encodeURIComponent(primerNombre)}&tasker_foto=${encodeURIComponent(perfilData.foto_url || '')}`;
 }
 
 // ══ CARGAR PERFIL ══
@@ -519,27 +571,13 @@ function renderPerfil(p) {
   perfilNombreCompleto = nombre;
   document.title = 'ChambaYa — ' + nombre;
   document.getElementById('perf-nombre').textContent = nombre;
-
   const primerNombre = nombre.split(' ')[0];
-  document.getElementById('hire-bar-titulo').textContent = `¿Querés trabajar con ${primerNombre}?`;
-
-  const ocups = p.ocupaciones || (p.ocupacion ? [p.ocupacion] : []);
-  document.getElementById('perf-ocupacion-mini').textContent = ocups.length ? ocups.slice(0,2).join(' · ') : '—';
+  const hbt = document.getElementById('hire-bar-titulo');
+  if (hbt) hbt.textContent = `¿Querés trabajar con ${primerNombre}?`;
   document.getElementById('perf-zona').textContent = p.zona || 'Argentina';
 
-  // Online status
-  if (p.updated_at) {
-    const diff = Date.now() - new Date(p.updated_at).getTime();
-    const mins = Math.floor(diff / 60000), hrs = Math.floor(mins / 60), days = Math.floor(hrs / 24);
-    let txt, esOnline = false;
-    if (mins < 5)       { txt = 'En línea ahora'; esOnline = true; }
-    else if (mins < 60) txt = `Activo hace ${mins} min`;
-    else if (hrs < 24)  txt = `Activo hace ${hrs}h`;
-    else if (days < 7)  txt = `Activo hace ${days} día${days > 1 ? 's' : ''}`;
-    else                txt = `Activo hace ${Math.floor(days/7)} semana${Math.floor(days/7) > 1 ? 's' : ''}`;
-    document.getElementById('pf-online-txt').textContent = txt;
-    if (esOnline) document.getElementById('online-dot').classList.add('verde');
-  }
+  // Online dot — solo si no lo seteamos ya con last_sign_in
+  if (!esMiPerfil && p.updated_at) calcularOnline(p.updated_at);
 
   // Avatar
   const avEl = document.getElementById('perf-av');
@@ -553,6 +591,7 @@ function renderPerfil(p) {
     document.getElementById('perf-bio-empty').style.display = 'none';
   }
 
+  const ocups = p.ocupaciones || (p.ocupacion ? [p.ocupacion] : []);
   renderChipsVista('ocup-chips-vista', 'ocup-empty', ocups);
   renderChipsVista('esp-chips-vista',  'esp-empty',  p.especialidades || []);
   renderChipsVista('idiomas-chips-vista', 'idiomas-empty', p.idiomas || []);
@@ -568,54 +607,29 @@ async function cargarStats() {
 
 // ══ REVIEWS ══
 function starsHtml(rating, size) {
-  return [1,2,3,4,5].map(i =>
-    `<span class="star${i <= rating ? ' on' : ''}" style="font-size:${size||'1rem'}">★</span>`
-  ).join('');
+  return [1,2,3,4,5].map(i => `<span class="star${i <= rating ? ' on' : ''}" style="font-size:${size||'1rem'}">★</span>`).join('');
 }
-
 async function cargarReviews() {
   try {
     const { data: revs } = await db.from('reviews').select('*').eq('destinatario_id', perfilId).order('created_at', { ascending: false });
     const lista = document.getElementById('reviews-lista');
     const empty = document.getElementById('reviews-empty');
     if (!revs?.length) { empty.style.display = 'block'; return; }
-
     const avg = (revs.reduce((s, r) => s + r.rating, 0) / revs.length).toFixed(1);
     document.getElementById('stat-rating').textContent  = avg;
     document.getElementById('stat-reviews').textContent = revs.length;
     empty.style.display = 'none';
-
     const autorIds = [...new Set(revs.map(r => r.autor_id))];
     const { data: auts } = await db.from('profiles').select('id,nombre,foto_url,email').in('id', autorIds);
-    const autMap = {};
-    (auts || []).forEach(a => autMap[a.id] = a);
-
-    lista.innerHTML = `
-      <div class="rv-summary">
-        <div class="rv-avg">${avg}</div>
-        <div class="rv-summary-info">
-          <div class="rv-stars-row">${starsHtml(Math.round(avg), '1.4rem')}</div>
-          <div class="rv-count">${revs.length} reseña${revs.length !== 1 ? 's' : ''}</div>
-        </div>
-      </div>`;
-
+    const autMap = {}; (auts || []).forEach(a => autMap[a.id] = a);
+    lista.innerHTML = `<div class="rv-summary"><div class="rv-avg">${avg}</div><div class="rv-summary-info"><div class="rv-stars-row">${starsHtml(Math.round(avg),'1.4rem')}</div><div class="rv-count">${revs.length} reseña${revs.length !== 1 ? 's' : ''}</div></div></div>`;
     revs.forEach(r => {
-      const a       = autMap[r.autor_id] || {};
-      const aNombre = (a.nombre && a.nombre !== 'Usuario') ? a.nombre
-                    : (a.email?.split('@')[0]?.replace(/[._\-]/g,' ')?.replace(/\b\w/g, c => c.toUpperCase()) || 'Usuario');
-      const aFoto   = a.foto_url || null;
-      const fecha   = new Date(r.created_at).toLocaleDateString('es-AR', { day:'numeric', month:'short', year:'numeric' });
-      const avHtml  = aFoto
-        ? `<a href="perfil.html?id=${r.autor_id}" class="rv-av"><img src="${aFoto}" alt="${escH(aNombre)}"></a>`
-        : `<a href="perfil.html?id=${r.autor_id}" class="rv-av">${aNombre.charAt(0).toUpperCase()}</a>`;
-      lista.innerHTML += `
-        <div class="rv-item">
-          <div class="rv-header">${avHtml}
-            <div><div class="rv-autor">${escH(aNombre)}</div><div class="rv-fecha">${fecha}</div></div>
-          </div>
-          <div class="rv-stars">${starsHtml(r.rating)}</div>
-          ${r.comentario ? `<div class="rv-coment">${escH(r.comentario)}</div>` : ''}
-        </div>`;
+      const a = autMap[r.autor_id] || {};
+      const aNombre = (a.nombre && a.nombre !== 'Usuario') ? a.nombre : (a.email?.split('@')[0]?.replace(/[._\-]/g,' ')?.replace(/\b\w/g, c => c.toUpperCase()) || 'Usuario');
+      const aFoto = a.foto_url || null;
+      const fecha = new Date(r.created_at).toLocaleDateString('es-AR', { day:'numeric', month:'short', year:'numeric' });
+      const avHtml = aFoto ? `<a href="perfil.html?id=${r.autor_id}" class="rv-av"><img src="${aFoto}" alt="${escH(aNombre)}"></a>` : `<a href="perfil.html?id=${r.autor_id}" class="rv-av">${aNombre.charAt(0).toUpperCase()}</a>`;
+      lista.innerHTML += `<div class="rv-item"><div class="rv-header">${avHtml}<div><div class="rv-autor">${escH(aNombre)}</div><div class="rv-fecha">${fecha}</div></div></div><div class="rv-stars">${starsHtml(r.rating)}</div>${r.comentario?`<div class="rv-coment">${escH(r.comentario)}</div>`:''}</div>`;
     });
   } catch(e) { console.warn('Error reviews:', e); }
 }
@@ -623,65 +637,73 @@ async function cargarReviews() {
 // ══ BOTONES ══
 function mostrarBotones() {
   const wrap = document.getElementById('perf-botones');
-  if (esMiPerfil) wrap.innerHTML = `<button class="btn-editar-perfil" onclick="editarBio()">✏️ Editar perfil</button>`;
+  if (esMiPerfil) wrap.innerHTML = `<button class="btn-editar-perfil" onclick="abrirModal()">✏️ Editar perfil</button>`;
 }
-
 function activarEdicion() {
   ['btn-edit-bio','btn-edit-ocup','btn-edit-esp','btn-edit-idiomas'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'block';
+    const el = document.getElementById(id); if (el) el.style.display = 'block';
   });
   document.getElementById('av-wrap').classList.add('editable');
   document.getElementById('perf-nombre').classList.add('editable');
   document.getElementById('zona-edit-ico').style.display = 'inline';
 }
 
-// ══ AVATAR ══
+// ══ MODAL EDITAR PERFIL ══
+function abrirModal() {
+  document.getElementById('modal-nombre').value = perfilData.nombre || '';
+  document.getElementById('modal-zona').value   = perfilData.zona   || '';
+  document.getElementById('modal-editar').classList.add('open');
+}
+function cerrarModal(e) {
+  if (e.target === document.getElementById('modal-editar'))
+    document.getElementById('modal-editar').classList.remove('open');
+}
+async function guardarModal() {
+  const nombre = document.getElementById('modal-nombre').value.trim();
+  const zona   = document.getElementById('modal-zona').value.trim();
+  if (!nombre || nombre.length < 2) { showToast('El nombre debe tener al menos 2 caracteres'); return; }
+  await guardarCampo({ nombre, zona: zona || null });
+  perfilData.nombre = nombre; perfilNombreCompleto = nombre; perfilData.zona = zona;
+  document.getElementById('perf-nombre').textContent = nombre;
+  document.getElementById('perf-zona').textContent   = zona || 'Argentina';
+  const hbt = document.getElementById('hire-bar-titulo');
+  if (hbt) hbt.textContent = `¿Querés trabajar con ${nombre.split(' ')[0]}?`;
+  document.getElementById('banner-nombre').style.display = 'none';
+  document.getElementById('modal-editar').classList.remove('open');
+}
+
+// ══ AVATAR — fix re-subida: borrar primero, luego subir ══
+// El problema es que Supabase Storage cachea por path. 
+// Solución: usar path con timestamp para forzar archivo nuevo siempre.
 function clickAvatar() { if (!esMiPerfil) return; document.getElementById('file-avatar').click(); }
 async function onFotoSeleccionada(input) {
   const file = input.files[0];
   if (!file) return;
-  input.value = '';
-  if (file.size > 2 * 1024 * 1024) { showToast('La imagen debe ser menor a 2MB'); return; }
+  input.value = ''; // reset para permitir reselección del mismo archivo
+  if (file.size > 3 * 1024 * 1024) { showToast('La imagen debe ser menor a 3MB'); return; }
   showToast('Subiendo foto...');
   try {
-    const ext  = file.name.split('.').pop().toLowerCase();
-    const path = `avatars/${miUserId}.${ext}`;
-    const { error: upErr } = await db.storage.from('Fotos').upload(path, file, { contentType: file.type, upsert: true });
+    const ext  = file.name.split('.').pop().toLowerCase().replace('jpeg','jpg');
+    // Path con timestamp — evita el problema de caché de Supabase Storage con mismo nombre
+    const path = `avatars/${miUserId}_${Date.now()}.${ext}`;
+    const { error: upErr } = await db.storage.from('Fotos').upload(path, file, { contentType: file.type, upsert: false });
     if (upErr) throw upErr;
     const { data: urlData } = db.storage.from('Fotos').getPublicUrl(path);
     const url = urlData.publicUrl;
     await db.from('profiles').update({ foto_url: url }).eq('id', miUserId);
-    document.getElementById('perf-av').innerHTML = `<img src="${url}?t=${Date.now()}" alt="Foto">`;
+    document.getElementById('perf-av').innerHTML = `<img src="${url}" alt="Foto">`;
     perfilData.foto_url = url;
     showToast('✅ Foto actualizada');
-  } catch(e) { showToast('Error: ' + e.message); }
+  } catch(e) { console.error('Error foto:', e); showToast('❌ Error al subir: ' + e.message); }
 }
 
-// ══ NOMBRE ══
+// ══ NOMBRE (inline en el card, solo por modal ahora) ══
 function editarNombre() {
   if (!esMiPerfil) return;
-  document.getElementById('perf-nombre').style.display = 'none';
-  const inp = document.getElementById('nombre-input');
-  inp.value = perfilData.nombre || ''; inp.style.display = 'block';
-  document.getElementById('nombre-btns').style.display = 'flex';
-  inp.focus(); inp.select();
+  abrirModal(); // redirigir al modal
 }
-function cancelarNombre() {
-  document.getElementById('perf-nombre').style.display = 'block';
-  document.getElementById('nombre-input').style.display = 'none';
-  document.getElementById('nombre-btns').style.display = 'none';
-}
-async function guardarNombre() {
-  const val = document.getElementById('nombre-input').value.trim();
-  if (!val || val.length < 2) { showToast('El nombre debe tener al menos 2 caracteres'); return; }
-  await guardarCampo({ nombre: val });
-  perfilData.nombre = val; perfilNombreCompleto = val;
-  document.getElementById('perf-nombre').textContent = val;
-  document.getElementById('hire-bar-titulo').textContent = `¿Querés trabajar con ${val.split(' ')[0]}?`;
-  document.getElementById('banner-nombre').style.display = 'none';
-  cancelarNombre();
-}
+function cancelarNombre() {}
+async function guardarNombre() {}
 
 // ══ BIO ══
 function editarBio() {
@@ -701,60 +723,105 @@ function cancelarBio() {
 async function guardarBio() {
   const bio = document.getElementById('bio-input').value.trim();
   await guardarCampo({ bio }); perfilData.bio = bio;
-  if (bio) {
-    document.getElementById('perf-bio-txt').textContent = bio;
-    document.getElementById('perf-bio-txt').style.display = 'block';
-    document.getElementById('perf-bio-empty').style.display = 'none';
-  } else {
-    document.getElementById('perf-bio-txt').style.display = 'none';
-    document.getElementById('perf-bio-empty').style.display = 'block';
-  }
+  if (bio) { document.getElementById('perf-bio-txt').textContent = bio; document.getElementById('perf-bio-txt').style.display = 'block'; document.getElementById('perf-bio-empty').style.display = 'none'; }
+  else { document.getElementById('perf-bio-txt').style.display = 'none'; document.getElementById('perf-bio-empty').style.display = 'block'; }
   cancelarBio();
 }
 
 // ══ ZONA ══
-function editarZona() {
-  if (!esMiPerfil) return;
-  document.getElementById('zona-vista-row').style.display = 'none';
-  document.getElementById('zona-edit-wrap').style.display = 'block';
-  const inp = document.getElementById('zona-input');
-  inp.value = perfilData.zona || ''; inp.focus();
-}
-function cancelarZona() {
-  document.getElementById('zona-vista-row').style.display = 'flex';
-  document.getElementById('zona-edit-wrap').style.display = 'none';
-}
-async function guardarZona() {
-  const val = document.getElementById('zona-input').value.trim();
-  await guardarCampo({ zona: val || null }); perfilData.zona = val;
-  document.getElementById('perf-zona').textContent = val || 'Argentina';
-  cancelarZona();
-}
+function editarZona() { if (!esMiPerfil) return; abrirModal(); }
+function cancelarZona() {}
+async function guardarZona() {}
 
 // ══ OCUPACIONES ══
-function editarOcup() { document.getElementById('ocup-vista').style.display='none'; document.getElementById('ocup-edit').style.display='block'; document.getElementById('btn-edit-ocup').style.display='none'; ocupSelTemp=[...(perfilData.ocupaciones||(perfilData.ocupacion?[perfilData.ocupacion]:[])) ]; renderChipsEdit('ocup-chips-edit',OCUPACIONES,ocupSelTemp,toggleOcup); }
-function toggleOcup(val) { ocupSelTemp=ocupSelTemp.includes(val)?ocupSelTemp.filter(v=>v!==val):[...ocupSelTemp,val]; actualizarChipsEdit('ocup-chips-edit',OCUPACIONES,ocupSelTemp,toggleOcup,ocupSelTemp.filter(v=>!OCUPACIONES.includes(v))); }
-function agregarCustomOcup() { const inp=document.getElementById('ocup-custom-input'),val=inp.value.trim(); if(!val)return; if(val.length>20){showToast('Máximo 20 caracteres');return;} if(ocupSelTemp.includes(val)){showToast('Ya está');return;} ocupSelTemp.push(val);inp.value=''; actualizarChipsEdit('ocup-chips-edit',OCUPACIONES,ocupSelTemp,toggleOcup,ocupSelTemp.filter(v=>!OCUPACIONES.includes(v))); }
+function editarOcup() {
+  document.getElementById('ocup-vista').style.display='none';
+  document.getElementById('ocup-edit').style.display='block';
+  document.getElementById('btn-edit-ocup').style.display='none';
+  ocupSelTemp = [...(perfilData.ocupaciones||(perfilData.ocupacion?[perfilData.ocupacion]:[])) ];
+  renderChipsEdit('ocup-chips-edit', OCUPACIONES, ocupSelTemp, 'toggleOcup', ocupSelTemp.filter(v=>!OCUPACIONES.includes(v)));
+}
+function toggleOcup(val) {
+  ocupSelTemp = ocupSelTemp.includes(val) ? ocupSelTemp.filter(v=>v!==val) : [...ocupSelTemp, val];
+  renderChipsEdit('ocup-chips-edit', OCUPACIONES, ocupSelTemp, 'toggleOcup', ocupSelTemp.filter(v=>!OCUPACIONES.includes(v)));
+}
+function agregarCustomOcup() {
+  const inp=document.getElementById('ocup-custom-input'), val=inp.value.trim();
+  if(!val) return;
+  if(val.length>25){showToast('Máximo 25 caracteres');return;}
+  if(ocupSelTemp.includes(val)){showToast('Ya está en la lista');return;}
+  ocupSelTemp.push(val); inp.value='';
+  renderChipsEdit('ocup-chips-edit', OCUPACIONES, ocupSelTemp, 'toggleOcup', ocupSelTemp.filter(v=>!OCUPACIONES.includes(v)));
+}
 function cancelarOcup() { document.getElementById('ocup-vista').style.display='block'; document.getElementById('ocup-edit').style.display='none'; document.getElementById('btn-edit-ocup').style.display='block'; }
-async function guardarOcup() { await guardarCampo({ocupaciones:ocupSelTemp,ocupacion:ocupSelTemp[0]||null}); perfilData.ocupaciones=ocupSelTemp; perfilData.ocupacion=ocupSelTemp[0]||null; document.getElementById('perf-ocupacion-mini').textContent=ocupSelTemp.length?ocupSelTemp.slice(0,2).join(' · '):'—'; renderChipsVista('ocup-chips-vista','ocup-empty',ocupSelTemp); cancelarOcup(); }
+async function guardarOcup() {
+  await guardarCampo({ocupaciones:ocupSelTemp, ocupacion:ocupSelTemp[0]||null});
+  perfilData.ocupaciones=ocupSelTemp; perfilData.ocupacion=ocupSelTemp[0]||null;
+  renderChipsVista('ocup-chips-vista','ocup-empty',ocupSelTemp); cancelarOcup();
+}
 
 // ══ ESPECIALIDADES ══
-function editarEsp() { document.getElementById('esp-vista').style.display='none'; document.getElementById('esp-edit').style.display='block'; document.getElementById('btn-edit-esp').style.display='none'; espSelTemp=[...(perfilData.especialidades||[])]; renderChipsEdit('esp-chips-edit',ESPECIALIDADES,espSelTemp,toggleEsp); }
-function toggleEsp(val) { espSelTemp=espSelTemp.includes(val)?espSelTemp.filter(v=>v!==val):[...espSelTemp,val]; actualizarChipsEdit('esp-chips-edit',ESPECIALIDADES,espSelTemp,toggleEsp,espSelTemp.filter(v=>!ESPECIALIDADES.includes(v))); }
-function agregarCustomEsp() { const inp=document.getElementById('esp-custom-input'),val=inp.value.trim(); if(!val)return; if(val.length>20){showToast('Máximo 20 caracteres');return;} if(espSelTemp.includes(val)){showToast('Ya está');return;} espSelTemp.push(val);inp.value=''; actualizarChipsEdit('esp-chips-edit',ESPECIALIDADES,espSelTemp,toggleEsp,espSelTemp.filter(v=>!ESPECIALIDADES.includes(v))); }
+function editarEsp() {
+  document.getElementById('esp-vista').style.display='none';
+  document.getElementById('esp-edit').style.display='block';
+  document.getElementById('btn-edit-esp').style.display='none';
+  espSelTemp=[...(perfilData.especialidades||[])];
+  renderChipsEdit('esp-chips-edit', ESPECIALIDADES, espSelTemp, 'toggleEsp', espSelTemp.filter(v=>!ESPECIALIDADES.includes(v)));
+}
+function toggleEsp(val) {
+  espSelTemp = espSelTemp.includes(val) ? espSelTemp.filter(v=>v!==val) : [...espSelTemp, val];
+  renderChipsEdit('esp-chips-edit', ESPECIALIDADES, espSelTemp, 'toggleEsp', espSelTemp.filter(v=>!ESPECIALIDADES.includes(v)));
+}
+function agregarCustomEsp() {
+  const inp=document.getElementById('esp-custom-input'), val=inp.value.trim();
+  if(!val) return;
+  if(val.length>25){showToast('Máximo 25 caracteres');return;}
+  if(espSelTemp.includes(val)){showToast('Ya está en la lista');return;}
+  espSelTemp.push(val); inp.value='';
+  renderChipsEdit('esp-chips-edit', ESPECIALIDADES, espSelTemp, 'toggleEsp', espSelTemp.filter(v=>!ESPECIALIDADES.includes(v)));
+}
 function cancelarEsp() { document.getElementById('esp-vista').style.display='block'; document.getElementById('esp-edit').style.display='none'; document.getElementById('btn-edit-esp').style.display='block'; }
 async function guardarEsp() { await guardarCampo({especialidades:espSelTemp}); perfilData.especialidades=espSelTemp; renderChipsVista('esp-chips-vista','esp-empty',espSelTemp); cancelarEsp(); }
 
 // ══ IDIOMAS ══
-function editarIdiomas() { document.getElementById('idiomas-vista').style.display='none'; document.getElementById('idiomas-edit').style.display='block'; document.getElementById('btn-edit-idiomas').style.display='none'; idiomasSelTemp=[...(perfilData.idiomas||[])]; renderChipsEdit('idiomas-chips-edit',IDIOMAS,idiomasSelTemp,toggleIdioma); }
-function toggleIdioma(val) { idiomasSelTemp=idiomasSelTemp.includes(val)?idiomasSelTemp.filter(v=>v!==val):[...idiomasSelTemp,val]; actualizarChipsEdit('idiomas-chips-edit',IDIOMAS,idiomasSelTemp,toggleIdioma); }
+function editarIdiomas() {
+  document.getElementById('idiomas-vista').style.display='none';
+  document.getElementById('idiomas-edit').style.display='block';
+  document.getElementById('btn-edit-idiomas').style.display='none';
+  idiomasSelTemp=[...(perfilData.idiomas||[])];
+  renderChipsEdit('idiomas-chips-edit', IDIOMAS, idiomasSelTemp, 'toggleIdioma', idiomasSelTemp.filter(v=>!IDIOMAS.includes(v)));
+}
+function toggleIdioma(val) {
+  idiomasSelTemp = idiomasSelTemp.includes(val) ? idiomasSelTemp.filter(v=>v!==val) : [...idiomasSelTemp, val];
+  renderChipsEdit('idiomas-chips-edit', IDIOMAS, idiomasSelTemp, 'toggleIdioma', idiomasSelTemp.filter(v=>!IDIOMAS.includes(v)));
+}
+function agregarCustomIdioma() {
+  const inp=document.getElementById('idiomas-custom-input'), val=inp.value.trim();
+  if(!val) return;
+  if(val.length>25){showToast('Máximo 25 caracteres');return;}
+  if(idiomasSelTemp.includes(val)){showToast('Ya está en la lista');return;}
+  idiomasSelTemp.push(val); inp.value='';
+  renderChipsEdit('idiomas-chips-edit', IDIOMAS, idiomasSelTemp, 'toggleIdioma', idiomasSelTemp.filter(v=>!IDIOMAS.includes(v)));
+}
 function cancelarIdiomas() { document.getElementById('idiomas-vista').style.display='block'; document.getElementById('idiomas-edit').style.display='none'; document.getElementById('btn-edit-idiomas').style.display='block'; }
 async function guardarIdiomas() { await guardarCampo({idiomas:idiomasSelTemp}); perfilData.idiomas=idiomasSelTemp; renderChipsVista('idiomas-chips-vista','idiomas-empty',idiomasSelTemp); cancelarIdiomas(); }
 
-// ══ CHIPS HELPERS ══
-function renderChipsEdit(cId,opts,sel,fn,custom){const c=document.getElementById(cId);if(!c)return;const all=[...opts,...(custom||[]).filter(x=>!opts.includes(x))];c.innerHTML=all.map(op=>`<div class="chip${sel.includes(op)?' sel':''}" onclick="${fn.name}(${JSON.stringify(op)})">${escH(op)}</div>`).join('');}
-function actualizarChipsEdit(cId,opts,sel,fn,custom){renderChipsEdit(cId,opts,sel,fn,custom);}
-function renderChipsVista(cId,eId,items){const c=document.getElementById(cId),e=document.getElementById(eId);if(!items?.length){c.innerHTML='';e.style.display='block';return;}e.style.display='none';c.innerHTML=items.map(i=>`<div class="chip sel readonly">${escH(i)}</div>`).join('');}
+// ══ CHIPS HELPERS — fnName como string para evitar problemas de scope ══
+function renderChipsEdit(cId, opts, sel, fnName, custom) {
+  const c = document.getElementById(cId);
+  if (!c) return;
+  const all = [...opts, ...(custom||[]).filter(x=>!opts.includes(x))];
+  c.innerHTML = all.map(op => {
+    const isSel = sel.includes(op);
+    return `<div class="chip${isSel?' sel':''}" onclick="window['${fnName}'](${JSON.stringify(op)})">${escH(op)}</div>`;
+  }).join('');
+}
+function renderChipsVista(cId, eId, items) {
+  const c=document.getElementById(cId), e=document.getElementById(eId);
+  if(!items?.length){c.innerHTML='';e.style.display='block';return;}
+  e.style.display='none';
+  c.innerHTML=items.map(i=>`<div class="chip sel readonly">${escH(i)}</div>`).join('');
+}
 
 // ══ GUARDAR ══
 async function guardarCampo(campos) {
@@ -765,14 +832,12 @@ async function guardarCampo(campos) {
   } catch(e) { showToast('❌ Error: ' + e.message); }
 }
 
-function mostrarBannerNombre() { const b = document.getElementById('banner-nombre'); if (b) b.style.display = 'block'; }
+function mostrarBannerNombre() { const b=document.getElementById('banner-nombre'); if(b) b.style.display='block'; }
 function escH(t) { if(!t)return''; const d=document.createElement('div'); d.textContent=String(t); return d.innerHTML; }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const inp = document.getElementById('nombre-input');
-  if (inp) inp.addEventListener('keydown', e => { if(e.key==='Enter') guardarNombre(); if(e.key==='Escape') cancelarNombre(); });
-  const zinp = document.getElementById('zona-input');
-  if (zinp) zinp.addEventListener('keydown', e => { if(e.key==='Enter') guardarZona(); if(e.key==='Escape') cancelarZona(); });
+  document.getElementById('modal-nombre')?.addEventListener('keydown', e => { if(e.key==='Enter') guardarModal(); if(e.key==='Escape') document.getElementById('modal-editar').classList.remove('open'); });
+  document.getElementById('modal-zona')?.addEventListener('keydown', e => { if(e.key==='Enter') guardarModal(); if(e.key==='Escape') document.getElementById('modal-editar').classList.remove('open'); });
 });
 </script>
 </body>
