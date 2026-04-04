@@ -220,90 +220,101 @@ let rtChannel = null;
 })();
 
 // ── CARGAR CONVERSACIONES ──
-// Una "conversación" = una oferta aceptada donde el usuario es dueño o tasker
 async function cargarConversaciones(autoAbrirId) {
   try {
-    // Buscar todas las ofertas aceptadas donde participo
-    const { data: ofertas, error } = await db.from('ofertas')
-      .select(`
-        id,
-        tarea_id,
-        tasker_id,
-        monto,
-        tareas ( id, titulo, estado, user_id, direccion_privada )
-      `)
+    // ── Query 1: soy el tasker ──
+    const { data: comoTasker, error: e1 } = await db.from('ofertas')
+      .select('id, tarea_id, tasker_id, monto, tareas ( id, titulo, estado, user_id, direccion_privada )')
       .eq('estado', 'aceptada')
-      .or(`tasker_id.eq.${miUserId},tareas.user_id.eq.${miUserId}`);
+      .eq('tasker_id', miUserId);
 
-    if (error) { console.error('Error convs:', error); mostrarConvsVacias(); return; }
-    if (!ofertas || !ofertas.length) { mostrarConvsVacias(); return; }
+    // ── Query 2: soy el dueño de la tarea ──
+    // Primero busco mis tareas con ofertas aceptadas
+    const { data: misTareas, error: e2 } = await db.from('tareas')
+      .select('id')
+      .eq('user_id', miUserId);
 
-    // Filtrar solo las que me involucran
-    const mias = ofertas.filter(o =>
-      o.tasker_id === miUserId || o.tareas?.user_id === miUserId
-    );
+    let comoDueno = [];
+    if (misTareas && misTareas.length) {
+      const misTareasIds = misTareas.map(t => t.id);
+      const { data: ofertasDueno } = await db.from('ofertas')
+        .select('id, tarea_id, tasker_id, monto, tareas ( id, titulo, estado, user_id, direccion_privada )')
+        .eq('estado', 'aceptada')
+        .in('tarea_id', misTareasIds);
+      comoDueno = ofertasDueno || [];
+    }
 
-    if (!mias.length) { mostrarConvsVacias(); return; }
+    if (e1) console.warn('Error query tasker:', e1.message);
+    if (e2) console.warn('Error query tareas:', e2.message);
 
-    // Para cada conversación necesitamos el perfil del otro usuario
-    const otrosIds = mias.map(o =>
-      o.tareas?.user_id === miUserId ? o.tasker_id : o.tareas?.user_id
-    ).filter(Boolean);
+    // Mergear sin duplicados (por id de oferta)
+    const vistas = new Set();
+    const todasOfertas = [];
+    for (const o of [...(comoTasker || []), ...comoDueno]) {
+      if (!vistas.has(o.id)) { vistas.add(o.id); todasOfertas.push(o); }
+    }
+
+    if (!todasOfertas.length) { mostrarConvsVacias(); return; }
+
+    // Perfiles de los otros usuarios
+    const otrosIds = todasOfertas.map(o => {
+      const esDueno = o.tareas?.user_id === miUserId;
+      return esDueno ? o.tasker_id : o.tareas?.user_id;
+    }).filter(Boolean);
 
     const { data: perfiles } = await db.from('profiles')
-      .select('id,nombre,foto_url,email').in('id', [...new Set(otrosIds)]);
+      .select('id, nombre, foto_url, email')
+      .in('id', [...new Set(otrosIds)]);
     const perfsMap = {};
-    (perfiles || []).forEach(p => perfsMap[p.id] = p);
+    (perfiles || []).forEach(p => { perfsMap[p.id] = p; });
 
-    // Obtener último mensaje de cada conversación
-    const convIds = mias.map(o => o.id);
+    // Último mensaje y no leídos
+    const convIds = todasOfertas.map(o => o.id);
+
     const { data: ultMsgs } = await db.from('mensajes')
-      .select('conv_id,contenido,created_at,tipo')
+      .select('conv_id, contenido, created_at, tipo')
       .in('conv_id', convIds)
       .order('created_at', { ascending: false });
-
     const ultMap = {};
     (ultMsgs || []).forEach(m => { if (!ultMap[m.conv_id]) ultMap[m.conv_id] = m; });
 
-    // Contar no leídos
     const { data: noLeidos } = await db.from('mensajes')
       .select('conv_id')
       .in('conv_id', convIds)
       .eq('leido', false)
       .neq('user_id', miUserId);
-
     const nolMap = {};
     (noLeidos || []).forEach(m => { nolMap[m.conv_id] = (nolMap[m.conv_id] || 0) + 1; });
 
-    todasConvs = mias.map(o => {
+    todasConvs = todasOfertas.map(o => {
       const esDueno = o.tareas?.user_id === miUserId;
-      const otroId = esDueno ? o.tasker_id : o.tareas?.user_id;
-      const perfil = perfsMap[otroId] || {};
-      // Nombre real: profiles.nombre → email prefix → 'Usuario'
-      const nombreRaw = perfil.nombre && perfil.nombre !== 'Usuario'
+      const otroId  = esDueno ? o.tasker_id : o.tareas?.user_id;
+      const perfil  = perfsMap[otroId] || {};
+      const nombreRaw = (perfil.nombre && perfil.nombre !== 'Usuario')
         ? perfil.nombre
-        : (perfil.email ? perfil.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g, c => c.toUpperCase()) : 'Usuario');
+        : (perfil.email
+            ? perfil.email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+            : 'Usuario');
       const ult = ultMap[o.id];
       return {
-        conv_id: o.id,
-        tarea_id: o.tarea_id,
+        conv_id:      o.id,
+        tarea_id:     o.tarea_id,
         tarea_titulo: o.tareas?.titulo || 'Tarea',
         tarea_estado: o.tareas?.estado || 'activa',
-        otro_id: otroId,
-        otro_nombre: nombreRaw,
-        otro_avatar: perfil.foto_url || null,
-        dir_privada: o.tareas?.direccion_privada || null,
-        es_dueno: esDueno,
-        ult_msg: ult?.contenido || null,
-        ult_hora: ult?.created_at || o.created_at,
-        ult_tipo: ult?.tipo || null,
-        no_leidos: nolMap[o.id] || 0
+        otro_id:      otroId,
+        otro_nombre:  nombreRaw,
+        otro_avatar:  perfil.foto_url || null,
+        dir_privada:  o.tareas?.direccion_privada || null,
+        es_dueno:     esDueno,
+        ult_msg:      ult?.contenido || null,
+        ult_hora:     ult?.created_at || o.created_at,
+        ult_tipo:     ult?.tipo || null,
+        no_leidos:    nolMap[o.id] || 0
       };
     }).sort((a, b) => new Date(b.ult_hora) - new Date(a.ult_hora));
 
     renderConvs(todasConvs);
 
-    // Auto-abrir si hay parámetro en URL
     if (autoAbrirId) {
       const conv = todasConvs.find(c => c.conv_id === autoAbrirId);
       if (conv) abrirConv(conv);
@@ -311,7 +322,7 @@ async function cargarConversaciones(autoAbrirId) {
       abrirConv(todasConvs[0]);
     }
 
-  } catch(e) { console.error(e); mostrarConvsVacias(); }
+  } catch(e) { console.error('cargarConversaciones:', e); mostrarConvsVacias(); }
 }
 
 function renderConvs(convs) {
