@@ -241,7 +241,7 @@ textarea.form-input { resize: none; line-height: 1.55; }
 .nav-btns { display: flex; gap: 12px; }
 
 /* Hero */
-.hero { text-align: center; padding: 96px 24px 80px; max-width: 780px; margin: 0 auto; }
+.hero { text-align: center; padding: 96px 24px 80px; }
 .hero-tag { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.9); border: 1px solid rgba(0,0,0,.08); color: #111827; padding: 6px 18px; border-radius: var(--radio-pill); font-size: .82rem; font-weight: 800; margin-bottom: 28px; }
 .hero-tag::before { content: ''; width: 7px; height: 7px; background: var(--verde); border-radius: 50%; animation: pulse 2s ease infinite; }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.4)} }
