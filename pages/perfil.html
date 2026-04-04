@@ -6,10 +6,8 @@
 <title>ChambaYa — Perfil</title>
 <link rel="stylesheet" href="../fonts.css">
 <link rel="stylesheet" href="../styles.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-.pf-wrap { max-width:1100px; margin:0 auto; padding:40px 32px 120px; display:grid; grid-template-columns:300px 1fr; gap:28px; align-items:start; font-family:'DM Sans','Nunito',sans-serif; }
+.pf-wrap { max-width:1100px; margin:0 auto; padding:40px 32px 120px; display:grid; grid-template-columns:300px 1fr; gap:28px; align-items:start; font-family:var(--font-principal); }
 .pf-left  { display:flex; flex-direction:column; gap:20px; }
 .pf-right { display:flex; flex-direction:column; gap:20px; }
 
@@ -513,9 +511,10 @@ function renderPerfil(p) {
 
   document.getElementById('perf-zona').textContent = p.zona || 'Argentina';
 
-  // Online dot para visitantes (usa updated_at del perfil)
-  if (!esMiPerfil && p.updated_at) {
-    setOnlineText(p.updated_at);
+  // Online dot para visitantes — usar last_seen_at (actividad real) o updated_at como fallback
+  if (!esMiPerfil) {
+    var actividadFecha = p.last_seen_at || p.updated_at;
+    if (actividadFecha) setOnlineText(actividadFecha);
   }
 
   // Avatar
