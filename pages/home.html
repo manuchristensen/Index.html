@@ -6,11 +6,232 @@
 <title>ChambaYa — Inicio</title>
 <link rel="stylesheet" href="../fonts.css">
 <link rel="stylesheet" href="../styles.css">
+<style>
+/* ── NAVBAR FIX: mismo margen que el resto ── */
+.nav-publicar { margin-left: 28px; }
 
+/* ── HERO full-width ── */
+.hero {
+  background: linear-gradient(135deg, #1E40AF 0%, #2563EB 100%);
+  padding: 64px 48px 72px;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  text-align: center;
+}
+.hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -1.5px;
+  line-height: 1.08;
+  margin-bottom: 36px;
+}
+.hero h1 span { color: #fff; }
+.search-bar {
+  background: #fff;
+  border-radius: 16px;
+  padding: 8px 8px 8px 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.22);
+  margin-bottom: 22px;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.search-bar input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: var(--font-principal);
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0F172A;
+  background: transparent;
+}
+.search-bar input::placeholder { color: #94A3B8; }
+.search-btn {
+  background: #0F172A;
+  color: #fff;
+  font-family: var(--font-principal);
+  font-weight: 800;
+  font-size: .92rem;
+  padding: 13px 26px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.search-btn:hover { background: #1E293B; }
+.sugerencias {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.sug-chip {
+  background: rgba(255,255,255,.18);
+  color: #fff;
+  font-family: var(--font-principal);
+  font-weight: 700;
+  font-size: .82rem;
+  padding: 8px 18px;
+  border-radius: 50px;
+  border: 1.5px solid rgba(255,255,255,.3);
+  cursor: pointer;
+  transition: all .2s;
+  text-decoration: none;
+}
+.sug-chip:hover { background: rgba(255,255,255,.28); }
+
+/* ── MAIN ── */
+.main { max-width: 1100px; margin: 0 auto; padding: 48px 40px 80px; }
+
+/* ── BANNER tarea activa ── */
+.banner-activa {
+  background: #0F172A;
+  border-radius: 16px;
+  padding: 20px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 48px;
+  flex-wrap: wrap;
+}
+.ba-left { display: flex; align-items: center; gap: 16px; }
+.ba-dot {
+  width: 10px; height: 10px;
+  background: var(--verde);
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: blink 2s ease infinite;
+}
+@keyframes blink {
+  0%,100% { box-shadow: 0 0 0 0 rgba(37,99,235,.5); }
+  50%      { box-shadow: 0 0 0 8px rgba(37,99,235,0); }
+}
+.ba-lbl { font-size: .68rem; font-weight: 800; color: var(--verde); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 3px; }
+.ba-title { font-size: 1rem; font-weight: 900; color: #fff; }
+.ba-sub { font-size: .78rem; font-weight: 700; color: rgba(255,255,255,.55); margin-top: 2px; }
+.ba-btns { display: flex; gap: 10px; }
+.ba-btn { font-family: var(--font-principal); font-weight: 800; font-size: .85rem; padding: 10px 22px; border-radius: 10px; border: none; cursor: pointer; text-decoration: none; transition: all .2s; }
+.ba-verde { background: var(--verde); color: #fff; }
+.ba-ghost { background: rgba(255,255,255,.1); color: #fff; }
+
+/* ── MIS TASKERS — más grandes y estéticos ── */
+.sec-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.sec-title { font-size: 1.15rem; font-weight: 900; color: var(--texto); }
+.sec-link { font-size: .85rem; font-weight: 700; color: var(--verde-o); text-decoration: none; }
+.sec-link:hover { text-decoration: underline; }
+
+.taskers-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 48px; }
+.tasker-card {
+  background: var(--blanco);
+  border-radius: 20px;
+  padding: 28px 24px;
+  box-shadow: var(--sombra);
+  cursor: pointer;
+  transition: all .2s;
+  border: 2px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.tasker-card:hover { border-color: var(--verde); transform: translateY(-3px); box-shadow: var(--sombra-lg); }
+.tasker-av {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.9rem;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.tasker-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.tasker-nombre { font-size: 1rem; font-weight: 900; margin-bottom: 4px; color: var(--texto); }
+.tasker-rol { font-size: .72rem; font-weight: 800; color: var(--suave); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 12px; }
+.tasker-stars { color: #F59E0B; font-size: .9rem; margin-bottom: 14px; }
+.btn-rebook {
+  display: block;
+  width: 100%;
+  background: var(--verde-c);
+  color: var(--verde-o);
+  font-family: var(--font-principal);
+  font-weight: 800;
+  font-size: .82rem;
+  padding: 9px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  transition: all .2s;
+  text-decoration: none;
+}
+.btn-rebook:hover { background: var(--verde); color: #fff; }
+
+/* ── TAREAS: 3 por fila, más compactas ── */
+.tareas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.tarea-card {
+  background: var(--blanco);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--sombra);
+  cursor: pointer;
+  transition: all .2s;
+  border: 2px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.tarea-card:hover { transform: translateY(-2px); box-shadow: var(--sombra-lg); border-color: var(--verde); }
+.tarea-img { width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; }
+.tarea-body { padding: 16px; }
+.tarea-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+.tarea-titulo { font-size: .9rem; font-weight: 900; flex: 1; }
+.tarea-precio { font-size: .95rem; font-weight: 900; color: var(--verde-o); white-space: nowrap; }
+.tarea-desc { font-size: .78rem; font-weight: 600; color: var(--suave); line-height: 1.5; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tarea-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.tarea-autor { font-size: .7rem; font-weight: 700; color: var(--suave); margin-left: auto; }
+.badge { font-size: .65rem; font-weight: 800; padding: 3px 8px; border-radius: var(--radio-pill); display: inline-flex; align-items: center; gap: 3px; }
+.bn { background: #F1F5F9; color: #475569; }
+.ba { background: #F1F5F9; color: #475569; }
+
+@media(max-width: 900px) {
+  .tareas-grid { grid-template-columns: 1fr 1fr; }
+  .taskers-row { grid-template-columns: 1fr; }
+}
+@media(max-width: 600px) {
+  .tareas-grid { grid-template-columns: 1fr; }
+  .hero { padding: 48px 24px 56px; }
+  .main { padding: 32px 20px 60px; }
+}
+</style>
 </head>
 <body>
 
-<!-- ══ NAVBAR ══ -->
 <nav class="nav">
   <a href="home.html" class="nav-logo">Chamba<em>Ya</em></a>
   <a href="publicar.html" class="nav-publicar">Publicar tarea</a>
@@ -20,7 +241,7 @@
   </div>
   <div class="nav-right">
     <a href="ayuda.html"          class="nav-right-link">Ayuda</a>
-    <a href="notificaciones.html" class="nav-right-link">Notificaciones</a>
+    <a href="notificaciones.html" class="nav-right-link" id="nav-notif-link">Notificaciones</a>
     <a href="mensajes.html"       class="nav-right-link">Mensajes</a>
     <div class="nav-av-wrap">
       <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)">
@@ -31,9 +252,9 @@
           <div class="dd-nombre" id="dd-nombre">Cargando...</div>
           <div class="dd-sub" onclick="window.location.href='perfil.html'">Ver perfil público</div>
         </div>
-        <a href="mistareas.html"     class="dd-item">Mis tareas <span class="dd-arrow">›</span></a>
-        <a href="pagos.html"         class="dd-item">Historial de pagos <span class="dd-arrow">›</span></a>
-        <a href="metodos-pago.html"  class="dd-item">Métodos de pago <span class="dd-arrow">›</span></a>
+        <a href="mistareas.html"    class="dd-item">Mis tareas <span class="dd-arrow">›</span></a>
+        <a href="pagos.html"        class="dd-item">Historial de pagos <span class="dd-arrow">›</span></a>
+        <a href="metodos-pago.html" class="dd-item">Métodos de pago <span class="dd-arrow">›</span></a>
         <div class="dd-sep"></div>
         <a href="configuracion.html" class="dd-item">Configuración <span class="dd-arrow">›</span></a>
         <a href="ayuda.html"         class="dd-item">Ayuda <span class="dd-arrow">›</span></a>
@@ -44,14 +265,14 @@
   </div>
 </nav>
 
-<!-- ══ HERO ══ -->
+<!-- HERO -->
 <div class="hero">
   <div class="hero-inner">
-    <h1>Publicá tu tarea.<br><span>Que alguien la haga.</span></h1>
+    <h1 id="hero-titulo">Publicá una tarea,<br><span>y tenela hecha.</span></h1>
     <div class="search-bar">
-      <span style="font-size:1.2rem;color:#94A3B8">🔍</span>
-      <input type="text" id="search-input" placeholder="¿Qué necesitás que te hagan? Ej: arreglar canilla, pintar living..." oninput="filtrar()">
-      <button class="search-btn" onclick="buscar()">Ver ofertas</button>
+      <span style="font-size:1.1rem;color:#94A3B8">🔍</span>
+      <input type="text" id="search-input" placeholder="¿Qué necesitás que te hagan? Ej: arreglar canilla, pintar living...">
+      <button class="search-btn" onclick="buscar()">Publicar tarea</button>
     </div>
     <div class="sugerencias">
       <a href="publicar.html?cat=mudanza"  class="sug-chip">Mudanza</a>
@@ -63,17 +284,17 @@
   </div>
 </div>
 
-<!-- ══ MAIN ══ -->
+<!-- MAIN -->
 <div class="main">
 
-  <!-- BANNER TAREA ACTIVA -->
+  <!-- BANNER tarea activa (solo si hay) -->
   <div class="banner-activa" id="banner-activa" style="display:none">
     <div class="ba-left">
       <div class="ba-dot"></div>
       <div>
-        <div class="ba-lbl">Tarea en curso</div>
-        <div class="ba-title" id="ba-titulo"></div>
-        <div class="ba-sub"   id="ba-sub"></div>
+        <div class="ba-lbl" id="ba-lbl">Tarea activa</div>
+        <div class="ba-title" id="ba-titulo">—</div>
+        <div class="ba-sub"   id="ba-sub">—</div>
       </div>
     </div>
     <div class="ba-btns">
@@ -82,7 +303,7 @@
     </div>
   </div>
 
-  <!-- MIS TASKERS -->
+  <!-- MIS TASKERS (3 en grilla) -->
   <div id="sec-taskers" style="display:none">
     <div class="sec-hdr">
       <div class="sec-title">Mis taskers</div>
@@ -91,36 +312,21 @@
     <div class="taskers-row" id="taskers-row"></div>
   </div>
 
-  <!-- CATEGORÍAS -->
-  <div class="sec-hdr"><div class="sec-title">Explorá por categoría</div></div>
-  <div class="cats-rapidas">
-    <a href="#" class="cat-chip activa" onclick="filtrarCat(this,'');return false"><span>🌟</span> Todas</a>
-    <a href="#" class="cat-chip" onclick="filtrarCat(this,'Plomería');return false"><span>🔧</span> Plomería</a>
-    <a href="#" class="cat-chip" onclick="filtrarCat(this,'Electricidad');return false"><span>⚡</span> Electricidad</a>
-    <a href="#" class="cat-chip" onclick="filtrarCat(this,'Pintura');return false"><span>🎨</span> Pintura</a>
-    <a href="#" class="cat-chip" onclick="filtrarCat(this,'Mudanza');return false"><span>📦</span> Mudanza</a>
-    <a href="#" class="cat-chip" onclick="filtrarCat(this,'Limpieza');return false"><span>🧹</span> Limpieza</a>
-    <a href="#" class="cat-chip" onclick="filtrarCat(this,'Jardín');return false"><span>🌿</span> Jardín</a>
-    <a href="#" class="cat-chip" onclick="filtrarCat(this,'Mandados');return false"><span>🛵</span> Mandados</a>
-    <a href="#" class="cat-chip" onclick="filtrarCat(this,'Tecnología');return false"><span>🖥️</span> Tecnología</a>
-    <a href="#" class="cat-chip" onclick="filtrarCat(this,'Carpintería');return false"><span>🔨</span> Carpintería</a>
-  </div>
-
-  <!-- TAREAS -->
+  <!-- TAREAS CERCANAS (3, reales) -->
   <div class="sec-hdr">
-    <div class="sec-title" id="tareas-titulo">Tareas publicadas cerca tuyo</div>
+    <div class="sec-title">Tareas cerca tuyo</div>
     <a href="explorar.html" class="sec-link">Ver todas</a>
   </div>
   <div id="tareas-contenido">
     <div class="spinner-wrap">
       <div class="spinner"></div>
-      <div style="font-size:.88rem;font-weight:700;color:var(--suave)">Cargando tareas...</div>
+      <div style="font-size:.85rem;font-weight:700;color:var(--suave)">Cargando tareas...</div>
     </div>
   </div>
 
 </div>
 
-<!-- ══ FOOTER ══ -->
+<!-- FOOTER -->
 <footer class="footer-home">
   <div class="footer-home-inner">
     <div>
@@ -129,22 +335,22 @@
     </div>
     <div>
       <div class="footer-col-title">Para clientes</div>
-      <a href="publicar.html"       class="footer-link">Publicar una tarea</a>
-      <a href="explorar.html"       class="footer-link">Explorar taskers</a>
-      <a href="ayuda.html"          class="footer-link">Preguntas frecuentes</a>
+      <a href="publicar.html" class="footer-link">Publicar una tarea</a>
+      <a href="explorar.html" class="footer-link">Explorar taskers</a>
+      <a href="ayuda.html"    class="footer-link">Preguntas frecuentes</a>
     </div>
     <div>
       <div class="footer-col-title">Para taskers</div>
-      <a href="explorar.html"       class="footer-link">Ver tareas disponibles</a>
-      <a href="perfil.html"         class="footer-link">Mi perfil tasker</a>
-      <a href="ayuda.html"          class="footer-link">Preguntas frecuentes</a>
+      <a href="explorar.html" class="footer-link">Ver tareas disponibles</a>
+      <a href="perfil.html"   class="footer-link">Mi perfil tasker</a>
+      <a href="ayuda.html"    class="footer-link">Preguntas frecuentes</a>
     </div>
     <div>
       <div class="footer-col-title">ChambaYa</div>
-      <a href="ayuda.html"          class="footer-link">Sobre nosotros</a>
-      <a href="ayuda.html"          class="footer-link">Contacto</a>
-      <a href="terminos.html"       class="footer-link">Términos y condiciones</a>
-      <a href="privacidad.html"     class="footer-link">Política de privacidad</a>
+      <a href="ayuda.html"      class="footer-link">Sobre nosotros</a>
+      <a href="ayuda.html"      class="footer-link">Contacto</a>
+      <a href="terminos.html"   class="footer-link">Términos y condiciones</a>
+      <a href="privacidad.html" class="footer-link">Política de privacidad</a>
     </div>
   </div>
   <div class="footer-bottom">
@@ -154,166 +360,229 @@
 </footer>
 
 <div id="toast"></div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../navbar.js"></script>
 <script>
-const TAREAS_DEMO = [
-  { id:'1', cat_icon:'🔧', categoria:'Plomería',     descripcion:'Se me rompió la canilla mezcladora de la cocina. Necesito que la revisen hoy si es posible.', presupuesto:8000,  fecha:'Hoy',            zona:'GBA Norte', autor:'Carlos R.' },
-  { id:'2', cat_icon:'🎨', categoria:'Pintura',      descripcion:'Habitación de 4x4 para pintar. Paredes blancas. Sin muebles. El material lo pongo yo.',         presupuesto:25000, fecha:'Esta semana',     zona:'CABA',      autor:'Laura M.'  },
-  { id:'3', cat_icon:'🧹', categoria:'Limpieza',     descripcion:'Departamento de 3 ambientes. Necesito limpieza profunda completa, cocina y baños incluidos.',   presupuesto:15000, fecha:'Mañana',          zona:'CABA',      autor:'Marcos T.' },
-  { id:'4', cat_icon:'📦', categoria:'Mudanza',      descripcion:'Mudanza de monoambiente. Pocos muebles. Necesito ayuda para cargar y descargar camión.',         presupuesto:12000, fecha:'El fin de semana', zona:'GBA Sur',   autor:'Ana L.'    },
-  { id:'5', cat_icon:'🌿', categoria:'Jardín',       descripcion:'Jardín grande. Necesito cortar el pasto, podar algunos arbustos y limpiar hojas.',               presupuesto:6000,  fecha:'Esta semana',     zona:'GBA Oeste', autor:'Roberto P.'},
-  { id:'6', cat_icon:'⚡', categoria:'Electricidad', descripcion:'Instalación de aire acondicionado split 3000 frigorías. Ya tengo el equipo, solo instalación.',  presupuesto:18000, fecha:'Esta semana',     zona:'GBA Norte', autor:'Diego F.'  },
-  { id:'7', cat_icon:'🔨', categoria:'Carpintería',  descripcion:'Tengo 3 cajas de muebles IKEA para armar. Un placard y dos mesas de luz.',                       presupuesto:10000, fecha:'Hoy',            zona:'CABA',      autor:'Sofía G.'  },
-  { id:'8', cat_icon:'🛵', categoria:'Mandados',     descripcion:'Necesito que alguien vaya al banco a hacer un trámite y me traiga documentos firmados.',         presupuesto:3500,  fecha:'Hoy',            zona:'CABA',      autor:'Pablo N.'  },
-];
+var miLat = null, miLng = null;
 
-const TASKERS_DEMO = [
-  { nombre:'Roberto M.', rol:'Mi plomero',    emoji:'🧔', bg:'#E0F2FE', stars:5 },
-  { nombre:'Ana L.',     rol:'Mi limpiadora', emoji:'👩', bg:'#FEF3C7', stars:5 },
-  { nombre:'Diego P.',   rol:'Mi pintor',     emoji:'👨‍🎨', bg:'#F3E8FF', stars:4 },
-];
+// ── INIT ──
+(async function() {
+  var sesRes = await db.auth.getSession();
+  var session = sesRes.data && sesRes.data.session;
+  if (!session) return;
 
-let todasTareas = [];
+  var userId = session.user.id;
+  var user   = session.user;
 
-// ── SESIÓN Y DATOS REALES ──
-(async () => {
-  const { data: { session } } = await db.auth.getSession();
-  if (!session) return; // navbar.js ya redirige si no hay sesión
+  // Buscar perfil del usuario para taskers y ubicacion
+  var perfRes = await db.from('profiles').select('nombre, foto_url, zona').eq('id', userId).maybeSingle();
+  var miPerfil = (perfRes && perfRes.data) || {};
 
-  const userId = session.user.id;
-  const user   = session.user;
-
-  // Saludo personalizado
-  const hora = new Date().getHours();
-  const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
-  const nombre = user.user_metadata?.nombre || user.user_metadata?.full_name || user.email?.split('@')[0] || '';
-  const primerNombre = nombre.split(' ')[0];
-  if (primerNombre) {
-    document.querySelector('.hero h1').innerHTML = saludo + ', <span>' + primerNombre + '.</span><br><span>¿Qué necesitás hoy?</span>';
-  }
-
-  // Cargar tareas activas del usuario para el banner
+  // ── BANNER: tarea activa real ──
   try {
-    const { data: tareasActivas } = await db.from('tareas')
+    var tRes = await db.from('tareas')
       .select('id, titulo, estado')
       .eq('user_id', userId)
       .in('estado', ['activa', 'en-curso'])
       .order('created_at', { ascending: false })
       .limit(1);
 
-    if (tareasActivas && tareasActivas.length) {
-      const t = tareasActivas[0];
-      // Contar ofertas pendientes
-      const { count: cantOfertas } = await db.from('ofertas')
+    if (tRes.data && tRes.data.length) {
+      var t = tRes.data[0];
+      var oRes = await db.from('ofertas')
         .select('id', { count: 'exact', head: true })
         .eq('tarea_id', t.id)
         .eq('estado', 'pendiente');
-
-      const bannerEl = document.getElementById('banner-activa');
-      const lbl = t.estado === 'en-curso' ? 'Tarea en curso' : 'Tarea activa';
-      const sub = cantOfertas > 0
-        ? 'Tenés ' + cantOfertas + ' oferta' + (cantOfertas !== 1 ? 's' : '') + ' esperando tu respuesta'
-        : 'Tu tarea está publicada y visible para los taskers';
-
+      var cant = oRes.count || 0;
+      document.getElementById('ba-lbl').textContent   = t.estado === 'en-curso' ? 'TAREA EN CURSO' : 'TAREA ACTIVA';
       document.getElementById('ba-titulo').textContent = t.titulo;
-      document.getElementById('ba-sub').textContent = sub;
-      document.querySelector('.ba-lbl').textContent = lbl.toUpperCase();
-      bannerEl.style.display = 'flex';
+      document.getElementById('ba-sub').textContent   = cant > 0
+        ? 'Tenés ' + cant + ' oferta' + (cant !== 1 ? 's' : '') + ' esperando tu respuesta'
+        : 'Publicada — visible para taskers cercanos';
+      document.getElementById('banner-activa').style.display = 'flex';
     }
-  } catch(e) { console.warn('Banner:', e.message); }
+  } catch(e) { console.warn('banner:', e.message); }
 
-  // Cargar tareas reales del mapa para mostrar en home
+  // ── MIS TASKERS: últimos 3 taskers con los que tuve contacto ──
   try {
-    const { data: tareas } = await db.from('tareas')
-      .select('id, titulo, categoria, cat_icon, descripcion, presupuesto, fecha, direccion, user_id, profiles(nombre)')
-      .eq('estado', 'activa')
-      .order('created_at', { ascending: false })
-      .limit(12);
+    var ofRes = await db.from('ofertas')
+      .select('tasker_id, tareas!inner(user_id)')
+      .eq('tareas.user_id', userId)
+      .eq('estado', 'aceptada')
+      .order('updated_at', { ascending: false })
+      .limit(6);
 
-    if (tareas && tareas.length) {
-      todasTareas = tareas.map(t => ({
-        id:          t.id,
-        cat_icon:    t.cat_icon || '📋',
-        categoria:   t.categoria || 'General',
-        descripcion: t.descripcion || '',
-        presupuesto: t.presupuesto || 0,
-        fecha:       t.fecha || 'Flexible',
-        zona:        t.direccion || '',
-        autor:       (t.profiles?.nombre || 'Usuario').split(' ')[0] + ' ' + ((t.profiles?.nombre || '').split(' ')[1]?.[0] || '') + '.'
-      }));
-      renderTareas(todasTareas);
-    } else {
-      renderTareas(TAREAS_DEMO);
-      todasTareas = [...TAREAS_DEMO];
+    var taskerIds = [];
+    if (ofRes.data && ofRes.data.length) {
+      var seen = {};
+      ofRes.data.forEach(function(o) {
+        if (!seen[o.tasker_id]) { seen[o.tasker_id] = true; taskerIds.push(o.tasker_id); }
+      });
+      taskerIds = taskerIds.slice(0, 3);
     }
-  } catch(e) {
-    renderTareas(TAREAS_DEMO);
-    todasTareas = [...TAREAS_DEMO];
-  }
+
+    if (taskerIds.length) {
+      var prRes = await db.from('profiles').select('id, nombre, foto_url, email').in('id', taskerIds);
+      var prfs  = prRes.data || [];
+
+      // Reviews promedio por tasker
+      var rvRes = await db.from('reviews').select('destinatario_id, rating').in('destinatario_id', taskerIds);
+      var rvMap = {};
+      (rvRes.data || []).forEach(function(r) {
+        if (!rvMap[r.destinatario_id]) rvMap[r.destinatario_id] = [];
+        rvMap[r.destinatario_id].push(r.rating);
+      });
+
+      var fila = document.getElementById('taskers-row');
+      fila.innerHTML = '';
+      prfs.forEach(function(p) {
+        var nombreP = (p.nombre && p.nombre !== 'Usuario') ? p.nombre
+          : (p.email ? p.email.split('@')[0].replace(/[._-]/g,' ').replace(/\b\w/g, function(c){return c.toUpperCase();}) : 'Tasker');
+        var ratings = rvMap[p.id] || [];
+        var avg = ratings.length ? (ratings.reduce(function(a,b){return a+b;},0)/ratings.length) : 0;
+        var stars = '';
+        for (var i = 1; i <= 5; i++) { stars += i <= Math.round(avg) ? '★' : '☆'; }
+        var avHtml = p.foto_url
+          ? '<img src="' + p.foto_url + '" alt="' + nombreP + '">'
+          : nombreP.charAt(0).toUpperCase();
+        fila.innerHTML += '<a href="perfil.html?id=' + p.id + '" class="tasker-card">'
+          + '<div class="tasker-av" style="background:#EFF6FF">' + avHtml + '</div>'
+          + '<div class="tasker-nombre">' + nombreP + '</div>'
+          + '<div class="tasker-rol">Tasker</div>'
+          + (avg > 0 ? '<div class="tasker-stars">' + stars + '</div>' : '<div class="tasker-stars" style="color:#D1D5DB">☆☆☆☆☆</div>')
+          + '<span class="btn-rebook">Volver a contratar</span>'
+          + '</a>';
+      });
+      document.getElementById('sec-taskers').style.display = 'block';
+    }
+  } catch(e) { console.warn('taskers:', e.message); }
+
+  // ── TAREAS CERCANAS: por geolocalización, 3 máximo ──
+  cargarTareasCercanas();
 })();
 
+function cargarTareasCercanas() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        miLat = pos.coords.latitude;
+        miLng = pos.coords.longitude;
+        buscarTareasDB(miLat, miLng);
+      },
+      function() { buscarTareasDB(null, null); }, // sin permiso: traer las 3 más recientes
+      { timeout: 5000 }
+    );
+  } else {
+    buscarTareasDB(null, null);
+  }
+}
+
+async function buscarTareasDB(lat, lng) {
+  var cont = document.getElementById('tareas-contenido');
+  try {
+    var res = await db.from('tareas')
+      .select('id, titulo, categoria, cat_icon, descripcion, presupuesto, fecha, lat, lng, direccion, profiles(nombre, foto_url)')
+      .eq('estado', 'activa')
+      .not('lat', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(50); // traemos bastantes para poder filtrar por distancia
+
+    var tareas = res.data || [];
+
+    if (lat !== null && tareas.length) {
+      // Ordenar por distancia y tomar las 3 más cercanas dentro de 20km
+      tareas = tareas.map(function(t) {
+        var dist = calcDist(lat, lng, t.lat, t.lng);
+        return Object.assign({}, t, { dist: dist });
+      })
+      .filter(function(t) { return t.dist <= 20; })
+      .sort(function(a, b) { return a.dist - b.dist; })
+      .slice(0, 3);
+    } else {
+      tareas = tareas.slice(0, 3);
+    }
+
+    if (!tareas.length) {
+      // fallback: cualquier tarea activa sin requisito de distancia
+      var fb = await db.from('tareas')
+        .select('id, titulo, categoria, cat_icon, descripcion, presupuesto, fecha, direccion, profiles(nombre)')
+        .eq('estado', 'activa')
+        .order('created_at', { ascending: false })
+        .limit(3);
+      tareas = fb.data || [];
+    }
+
+    renderTareas(tareas);
+  } catch(e) {
+    console.warn('tareas:', e.message);
+    cont.innerHTML = '<div style="text-align:center;padding:32px;color:var(--suave);font-size:.88rem;font-weight:700">No se pudieron cargar las tareas.</div>';
+  }
+}
+
+// Haversine — distancia en km entre dos coordenadas
+function calcDist(lat1, lng1, lat2, lng2) {
+  if (!lat2 || !lng2) return 9999;
+  var R = 6371;
+  var dLat = (lat2 - lat1) * Math.PI / 180;
+  var dLng = (lng2 - lng1) * Math.PI / 180;
+  var a = Math.sin(dLat/2)*Math.sin(dLat/2)
+        + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)
+        * Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+var bgs = ['#DBEAFE','#FEF3C7','#D1FAE5','#F3E8FF','#FFE4E6','#E0E7FF'];
+
 function renderTareas(tareas) {
-  const cont = document.getElementById('tareas-contenido');
-  if (!tareas.length) {
-    cont.innerHTML = `<div class="empty"><div class="empty-ico">📋</div><h3>No hay tareas en esta categoría</h3><p>Probá con otra o publicá la primera.</p><a href="publicar.html" style="display:inline-flex;background:var(--verde);color:#fff;font-family:var(--font-principal);font-weight:900;padding:12px 24px;border-radius:50px;text-decoration:none;font-size:.95rem">Publicar tarea</a></div>`;
+  var cont = document.getElementById('tareas-contenido');
+  if (!tareas || !tareas.length) {
+    cont.innerHTML = '<div style="text-align:center;padding:32px;color:var(--suave);font-size:.88rem;font-weight:700">No hay tareas activas cerca tuyo por ahora.</div>';
     return;
   }
-  const bgs = ['#E0F2FE','#FEF3C7','#D1FAE5','#F3E8FF','#FFE4E6','#E0E7FF'];
-  cont.innerHTML = `<div class="tareas-grid">${tareas.map((t,i) => {
-    const precio = !t.presupuesto ? 'A convenir' : '$' + Number(t.presupuesto).toLocaleString('es-AR');
-    return `<a href="detalle.html?id=${t.id}" class="tarea-card">
-      <div class="tarea-img" style="background:${bgs[i%bgs.length]}">${t.cat_icon}</div>
-      <div class="tarea-body">
-        <div class="tarea-top"><div class="tarea-titulo">${t.cat_icon} ${t.categoria}</div><div class="tarea-precio">${precio}</div></div>
-        <div class="tarea-desc">${t.descripcion}</div>
-        <div class="tarea-meta">
-          <span class="badge bn">📅 ${t.fecha}</span>
-          ${t.zona ? `<span class="badge ba">📍 ${t.zona}</span>` : ''}
-          <span class="tarea-autor">por ${t.autor}</span>
-        </div>
-      </div>
-    </a>`;
-  }).join('')}</div>`;
+  var html = '<div class="tareas-grid">';
+  tareas.forEach(function(t, i) {
+    var precio = t.presupuesto ? '$' + Number(t.presupuesto).toLocaleString('es-AR') : 'A convenir';
+    var icon   = t.cat_icon || '📋';
+    var cat    = t.categoria || 'General';
+    var desc   = t.descripcion || '';
+    var autor  = t.profiles
+      ? ((t.profiles.nombre || '').split(' ')[0] || 'Usuario')
+      : 'Usuario';
+    var zona   = t.dist ? Math.round(t.dist) + ' km' : (t.direccion ? t.direccion.split(' - ')[1] || '' : '');
+    html += '<a href="tarea.html?id=' + t.id + '" class="tarea-card">'
+      + '<div class="tarea-img" style="background:' + bgs[i % bgs.length] + '">' + icon + '</div>'
+      + '<div class="tarea-body">'
+      + '<div class="tarea-top"><div class="tarea-titulo">' + icon + ' ' + cat + '</div><div class="tarea-precio">' + precio + '</div></div>'
+      + '<div class="tarea-desc">' + escH(desc) + '</div>'
+      + '<div class="tarea-meta">'
+      + (t.fecha ? '<span class="badge bn">📅 ' + t.fecha + '</span>' : '')
+      + (zona    ? '<span class="badge ba">📍 ' + zona + '</span>' : '')
+      + '<span class="tarea-autor">por ' + escH(autor) + '</span>'
+      + '</div>'
+      + '</div>'
+      + '</a>';
+  });
+  html += '</div>';
+  cont.innerHTML = html;
 }
 
-function renderTaskers() {
-  document.getElementById('sec-taskers').style.display = 'block';
-  document.getElementById('taskers-row').innerHTML = TASKERS_DEMO.map(t => `
-    <a href="perfil-tasker.html" class="tasker-card">
-      <div class="tasker-av" style="background:${t.bg}">${t.emoji}</div>
-      <div class="tasker-nombre">${t.nombre}</div>
-      <div class="tasker-rol">${t.rol}</div>
-      <div class="tasker-stars">${'★'.repeat(t.stars)}${'☆'.repeat(5-t.stars)}</div>
-      <span class="btn-rebook">Volver a contratar</span>
-    </a>`).join('');
-}
-
-function filtrarCat(el, cat) {
-  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('activa'));
-  el.classList.add('activa');
-  const filtradas = cat ? todasTareas.filter(t => t.categoria === cat) : todasTareas;
-  document.getElementById('tareas-titulo').textContent = cat ? `Tareas de ${cat}` : 'Tareas publicadas cerca tuyo';
-  renderTareas(filtradas);
-}
-
-function filtrar() {
-  const q = document.getElementById('search-input').value.toLowerCase();
-  renderTareas(todasTareas.filter(t => !q || t.descripcion.toLowerCase().includes(q) || t.categoria.toLowerCase().includes(q)));
+function escH(t) {
+  if (!t) return '';
+  var d = document.createElement('div');
+  d.textContent = String(t);
+  return d.innerHTML;
 }
 
 function buscar() {
-  const q = document.getElementById('search-input').value.trim();
-  window.location.href = q ? `publicar.html?q=${encodeURIComponent(q)}` : 'publicar.html';
+  var q = document.getElementById('search-input').value.trim();
+  window.location.href = q ? 'publicar.html?q=' + encodeURIComponent(q) : 'publicar.html';
 }
 
-document.getElementById('search-input').addEventListener('keydown', function(e) { if (e.key === 'Enter') buscar(); });
-
-// Render inicial con demo mientras carga
-renderTareas(TAREAS_DEMO);
-todasTareas = [...TAREAS_DEMO];
-renderTaskers();
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('search-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') buscar();
+  });
+});
 </script>
 </body>
 </html>
