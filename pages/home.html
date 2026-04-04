@@ -226,16 +226,180 @@
   .tareas-grid { grid-template-columns: 1fr 1fr; }
   .taskers-row { grid-template-columns: 1fr; }
 }
+
+/* ══ MÓVIL ══ */
 @media(max-width: 600px) {
+
+  /* ── Navbar móvil: hamburger | logo centrado | + ── */
+  .nav {
+    padding: 0 16px;
+    justify-content: space-between;
+    position: relative;
+  }
+  /* Ocultar elementos de desktop */
+  .nav-publicar { display: none; }
+  .nav-links    { display: none; }
+  .nav-right    { display: none; }
+
+  /* Mostrar elementos móviles */
+  .nav-hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    padding: 8px;
+    flex-shrink: 0;
+    background: none;
+    border: none;
+  }
+  .nav-hamburger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--texto);
+    border-radius: 2px;
+  }
+  .nav-logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+  }
+  .nav-plus {
+    display: flex;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--verde);
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: 300;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  /* Drawer móvil */
+  .nav-drawer {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+  }
+  .nav-drawer.open { display: block; }
+  .nav-drawer-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.4);
+  }
+  .nav-drawer-panel {
+    position: absolute;
+    top: 0; left: 0;
+    width: 78vw;
+    max-width: 300px;
+    height: 100%;
+    background: var(--blanco);
+    padding: 48px 24px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: 4px 0 32px rgba(0,0,0,.15);
+  }
+  .nav-drawer-logo {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--texto);
+    text-decoration: none;
+    margin-bottom: 24px;
+    display: block;
+  }
+  .nav-drawer-logo em { color: var(--verde); font-style: normal; }
+  .nav-drawer-link {
+    display: flex;
+    align-items: center;
+    padding: 13px 0;
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--texto);
+    text-decoration: none;
+    border-bottom: 1px solid var(--borde);
+    gap: 10px;
+  }
+  .nav-drawer-link:last-child { border-bottom: none; }
+  .nav-drawer-link.rojo { color: var(--rojo); }
+  .nav-drawer-sep { height: 1px; background: var(--borde); margin: 8px 0; }
+  /* mini perfil en el drawer */
+  .nav-drawer-perfil {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0 20px;
+    margin-bottom: 8px;
+    border-bottom: 2px solid var(--borde);
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .nav-drawer-av {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--verde-c);
+    border: 2px solid var(--verde);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 900;
+    color: var(--verde-o);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .nav-drawer-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .nav-drawer-nombre { font-size: .95rem; font-weight: 900; color: var(--texto); }
+  .nav-drawer-sub { font-size: .75rem; font-weight: 700; color: var(--suave); margin-top: 1px; }
+
+  /* ── Hero móvil ── */
+  .hero { padding: 40px 20px 52px; }
+  .hero h1 { font-size: 2rem; margin-bottom: 28px; }
+
+  /* Barra de búsqueda: input arriba, botón abajo (como Airtasker) */
+  .search-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 18px;
+    gap: 14px;
+    border-radius: 14px;
+    max-width: 100%;
+  }
+  .search-bar input { font-size: .95rem; }
+  .search-btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: .95rem;
+    text-align: center;
+  }
+
+  /* ── Main ── */
+  .main { padding: 28px 16px 60px; }
   .tareas-grid { grid-template-columns: 1fr; }
-  .hero { padding: 48px 24px 56px; }
-  .main { padding: 32px 20px 60px; }
+  .taskers-row { grid-template-columns: 1fr; }
+  .banner-activa { padding: 18px 20px; }
+  .ba-btns { flex-direction: column; width: 100%; }
+  .ba-btn { text-align: center; }
 }
 </style>
 </head>
 <body>
 
 <nav class="nav">
+  <!-- Móvil: hamburger izquierda -->
+  <button class="nav-hamburger" id="nav-hamburger" onclick="abrirDrawer()" style="display:none" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+
   <a href="home.html" class="nav-logo">Chamba<em>Ya</em></a>
   <a href="publicar.html" class="nav-publicar">Publicar tarea</a>
   <div class="nav-links">
@@ -266,7 +430,35 @@
       </div>
     </div>
   </div>
+
+  <!-- Móvil: botón + derecha -->
+  <a href="publicar.html" class="nav-plus" id="nav-plus" style="display:none" aria-label="Publicar tarea">+</a>
 </nav>
+
+<!-- Drawer móvil -->
+<div class="nav-drawer" id="nav-drawer">
+  <div class="nav-drawer-overlay" onclick="cerrarDrawer()"></div>
+  <div class="nav-drawer-panel">
+    <a href="home.html" class="nav-drawer-logo">Chamba<em>Ya</em></a>
+    <!-- Mini perfil -->
+    <a href="perfil.html" class="nav-drawer-perfil" id="drawer-perfil-link">
+      <div class="nav-drawer-av" id="drawer-av">?</div>
+      <div>
+        <div class="nav-drawer-nombre" id="drawer-nombre">Cargando...</div>
+        <div class="nav-drawer-sub">Ver perfil público</div>
+      </div>
+    </a>
+    <a href="explorar.html"   class="nav-drawer-link">🔍 Explorar tareas</a>
+    <a href="mistareas.html"  class="nav-drawer-link">📋 Mis tareas</a>
+    <a href="mensajes.html"   class="nav-drawer-link">💬 Mensajes</a>
+    <a href="notificaciones.html" class="nav-drawer-link">🔔 Notificaciones</a>
+    <div class="nav-drawer-sep"></div>
+    <a href="configuracion.html" class="nav-drawer-link">⚙️ Configuración</a>
+    <a href="ayuda.html"         class="nav-drawer-link">❓ Ayuda</a>
+    <div class="nav-drawer-sep"></div>
+    <a href="#" class="nav-drawer-link rojo" onclick="cerrarSesion();return false">Cerrar sesión</a>
+  </div>
+</div>
 
 <!-- HERO -->
 <div class="hero">
@@ -366,6 +558,31 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../navbar.js"></script>
 <script>
+// ── MÓVIL: mostrar hamburger y + según ancho ──
+function aplicarModo() {
+  var esMovil = window.innerWidth <= 600;
+  var ham  = document.getElementById('nav-hamburger');
+  var plus = document.getElementById('nav-plus');
+  if (ham)  ham.style.display  = esMovil ? 'flex' : 'none';
+  if (plus) plus.style.display = esMovil ? 'flex' : 'none';
+}
+aplicarModo();
+window.addEventListener('resize', aplicarModo);
+
+// ── DRAWER ──
+function abrirDrawer() {
+  document.getElementById('nav-drawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function cerrarDrawer() {
+  document.getElementById('nav-drawer').classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Cerrar con Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') cerrarDrawer();
+});
+
 var miLat = null, miLng = null;
 
 // ── INIT ──
@@ -381,7 +598,18 @@ var miLat = null, miLng = null;
   var perfRes = await db.from('profiles').select('nombre, foto_url, zona').eq('id', userId).maybeSingle();
   var miPerfil = (perfRes && perfRes.data) || {};
 
-  // ── BANNER: tarea activa real ──
+  // Poblar drawer móvil con datos del perfil
+  var drawerNombre = document.getElementById('drawer-nombre');
+  var drawerAv     = document.getElementById('drawer-av');
+  if (drawerNombre) drawerNombre.textContent = miPerfil.nombre || (user.user_metadata && user.user_metadata.full_name) || 'Mi perfil';
+  if (drawerAv) {
+    if (miPerfil.foto_url) {
+      drawerAv.innerHTML = '<img src="' + miPerfil.foto_url + '" alt="foto">';
+    } else {
+      var n = drawerNombre ? drawerNombre.textContent : '?';
+      drawerAv.textContent = n.charAt(0).toUpperCase();
+    }
+  }
   try {
     var tRes = await db.from('tareas')
       .select('id, titulo, estado')
