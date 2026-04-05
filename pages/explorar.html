@@ -198,8 +198,8 @@ body{overflow:hidden}
       <span class="exp-search-ico">&#128269;</span>
       <input type="text" class="exp-search" id="exp-search" placeholder="Buscar tareas... Ej: limpieza, plomería, jardín" oninput="filtrar()">
     </div>
-    <button class="filtro-adv-btn activo" id="btn-distancia" onclick="abrirModalDistancia()">
-      &#128205; <span id="lbl-distancia">10 km</span>
+    <button class="filtro-adv-btn" id="btn-distancia" onclick="abrirModalDistancia()">
+      &#128205; <span id="lbl-distancia">Distancia</span>
     </button>
     <button class="filtro-adv-btn" id="btn-precio" onclick="abrirModalPrecio()">
       &#128176; <span id="lbl-precio">Precio</span>
@@ -249,7 +249,7 @@ body{overflow:hidden}
 
 let todasTareas = [];
 // Filtros avanzados
-let filtroDistancia = 10;  // 10km por defecto
+let filtroDistancia = null;  // null = sin filtro hasta tener GPS
 let filtroPrecioMin = -1;    // -1 = sin filtro
 let filtroPrecioMax = -1;    // -1 = sin filtro  
 let filtroPrecioLabel = 'Precio';
@@ -324,7 +324,7 @@ mapaListo = true;
     } catch(e) { /* silencioso */ }
   }
 
-  // 3. Cargar tareas (ya con filtroDistancia = 10 activo)
+  // 3. Cargar tareas inmediatamente (sin esperar GPS — Safari puede tardar)
   await cargarTareas();
 
   // 4. Realtime
@@ -348,33 +348,56 @@ function pedirUbicacion() {
 }
 
 function solicitarGPS() {
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      document.getElementById('loc-loading').classList.remove('show');
-      miUbicacion = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+  // Intentar primero con alta precisión, fallback a baja precisión para Safari iOS
+  function intentarGPS(highAccuracy) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        document.getElementById('loc-loading').classList.remove('show');
+        miUbicacion = { lat: pos.coords.latitude, lng: pos.coords.longitude };
 
-      // Zoom inicial = radio del filtro activo (por defecto 10km)
-      const km = filtroDistancia || 10;
-      mapa.setView([miUbicacion.lat, miUbicacion.lng], kmAZoom(km, miUbicacion.lat));
+        // Activar filtro 10km por defecto recién cuando tenemos GPS
+        if (filtroDistancia === null) {
+          filtroDistancia = 10;
+          document.getElementById('lbl-distancia').textContent = '10 km';
+          document.getElementById('btn-distancia').classList.add('activo');
+        }
+        const km = filtroDistancia || 10;
+        mapa.setView([miUbicacion.lat, miUbicacion.lng], kmAZoom(km, miUbicacion.lat));
 
-      if (window._markerUsuario) mapa.removeLayer(window._markerUsuario);
-      const iconUser = L.divIcon({
-        html: `<div style="width:18px;height:18px;background:#3B82F6;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 10px rgba(59,130,246,.5)"></div>`,
-        className:'', iconSize:[18,18], iconAnchor:[9,9]
-      });
-      window._markerUsuario = L.marker([miUbicacion.lat, miUbicacion.lng], { icon: iconUser, zIndexOffset: 1000 })
-        .addTo(mapa)
-        .bindPopup('<div class="map-popup"><div class="map-popup-titulo">&#128205; Tu ubicacion actual</div></div>');
-      if (todasTareas.length > 0) filtrar();
-    },
-    err => {
-      document.getElementById('loc-loading').classList.remove('show');
-      const msgs = { 1:'📍 Permiso denegado. Hacé clic en el candado → Ubicación → Permitir y recargá.', 2:'📍 No se pudo obtener tu ubicación. Verificá tu conexión.', 3:'📍 Tiempo de espera agotado. Intentá de nuevo.' };
-      showToast(msgs[err.code] || '📍 Error de geolocalización');
-      console.warn('Geoloc error:', err.code, err.message);
-    },
-    { timeout: 12000, maximumAge: 30000, enableHighAccuracy: true }
-  );
+        if (window._markerUsuario) mapa.removeLayer(window._markerUsuario);
+        const iconUser = L.divIcon({
+          html: `<div style="width:18px;height:18px;background:#3B82F6;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 10px rgba(59,130,246,.5)"></div>`,
+          className:'', iconSize:[18,18], iconAnchor:[9,9]
+        });
+        window._markerUsuario = L.marker([miUbicacion.lat, miUbicacion.lng], { icon: iconUser, zIndexOffset: 1000 })
+          .addTo(mapa)
+          .bindPopup('<div class="map-popup"><div class="map-popup-titulo">&#128205; Tu ubicacion actual</div></div>');
+        if (todasTareas.length > 0) filtrar();
+      },
+      err => {
+        if (highAccuracy && err.code !== 1) {
+          // Si falló con alta precisión (no por permisos), reintentar con baja precisión
+          console.warn('GPS alta precisión falló, reintentando con baja precisión:', err.code);
+          intentarGPS(false);
+          return;
+        }
+        document.getElementById('loc-loading').classList.remove('show');
+        const msgs = {
+          1: '📍 Permiso denegado. Habilitá la ubicación en Configuración → Safari → Ubicación.',
+          2: '📍 No se pudo obtener tu ubicación. Verificá tu conexión.',
+          3: '📍 Tiempo de espera agotado. Intentá de nuevo.'
+        };
+        showToast(msgs[err.code] || '📍 Error de geolocalización');
+        console.warn('Geoloc error:', err.code, err.message);
+      },
+      {
+        timeout: highAccuracy ? 8000 : 15000,
+        maximumAge: 60000,
+        enableHighAccuracy: highAccuracy
+      }
+    );
+  }
+  intentarGPS(true);
 }
 
 function centrarEnMiUbicacion() {
@@ -537,9 +560,9 @@ function filtrar() {
 // ── FUNCIONES DE FILTROS AVANZADOS ──
 function abrirModalDistancia() {
   if (!miUbicacion) {
-    showToast('📍 Primero habilitá tu ubicación haciendo clic en el pin del mapa');
+    // En Safari el GPS puede tardar — permitir cambiar el radio igual
+    // y pedir la ubicación en paralelo
     pedirUbicacion();
-    return;
   }
   document.getElementById('modal-distancia').classList.add('show');
   document.getElementById('dist-slider').value = filtroDistancia || 10;
@@ -750,7 +773,7 @@ function escHTML(t) {
     <div class="fm-titulo">📍 Distancia desde tu ubicación</div>
     <div class="fm-valor"><span id="dist-valor">10</span> km</div>
     <div class="fm-slider-wrap">
-      <input type="range" class="fm-slider" id="dist-slider" min="1" max="100" value="10" oninput="document.getElementById('dist-valor').textContent=this.value">
+      <input type="range" class="fm-slider" id="dist-slider" min="1" max="100" value="10" oninput="document.getElementById('dist-valor').textContent=this.value" onchange="document.getElementById('dist-valor').textContent=this.value">
     </div>
     <div class="fm-subtxt">Solo muestra tareas dentro de este radio</div>
     <div class="fm-btns">
