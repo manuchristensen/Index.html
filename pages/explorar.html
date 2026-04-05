@@ -399,19 +399,52 @@ function onGPSErrorFinal(err) {
   }
 }
 
+let _watchId = null;
+
 function pedirUbicacion() {
   if (!navigator.geolocation) {
     showToast('Tu navegador no soporta geolocalización');
     return;
   }
-  if (_gpsEnCurso) return; // evitar llamadas dobles
+  if (_gpsEnCurso) return;
   _gpsEnCurso = true;
   document.getElementById('loc-loading').classList.add('show');
 
-  // maximumAge: 0 fuerza una lectura fresca — evita que Safari devuelva Buenos Aires cacheado
-  navigator.geolocation.getCurrentPosition(
-    onGPSExito,
-    err => onGPSError(err, true),
+  // Cancelar watch previo si existe
+  if (_watchId !== null) {
+    navigator.geolocation.clearWatch(_watchId);
+    _watchId = null;
+  }
+
+  // Timeout manual de 12s por si Safari no llama ni success ni error
+  const timerFallback = setTimeout(() => {
+    if (!miUbicacion) {
+      if (_watchId !== null) navigator.geolocation.clearWatch(_watchId);
+      _watchId = null;
+      // Reintentar con baja precisión
+      console.log('[ChambaYa] Timeout watchPosition, reintentando con baja precisión...');
+      navigator.geolocation.getCurrentPosition(
+        onGPSExito,
+        onGPSErrorFinal,
+        { enableHighAccuracy: false, timeout: 20000, maximumAge: 0 }
+      );
+    }
+  }, 12000);
+
+  // watchPosition es más confiable que getCurrentPosition en Safari iOS
+  _watchId = navigator.geolocation.watchPosition(
+    pos => {
+      clearTimeout(timerFallback);
+      navigator.geolocation.clearWatch(_watchId);
+      _watchId = null;
+      onGPSExito(pos);
+    },
+    err => {
+      clearTimeout(timerFallback);
+      if (_watchId !== null) navigator.geolocation.clearWatch(_watchId);
+      _watchId = null;
+      onGPSError(err, true);
+    },
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
   );
 }
