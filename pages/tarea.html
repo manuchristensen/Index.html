@@ -794,55 +794,22 @@ async function cargarInfoAsignado(tareaId, miId) {
       header.insertAdjacentElement('afterend', banner);
     }
 
-    // ── Chequear si la tarea ya tiene "tasker_confirmo" ──
+    // ── Chequear flags de la tarea ──
     const taskerConfirmo = tareaData?.tasker_confirmo || false;
+    const estadoTarea    = tareaData?.estado || 'en-curso';
 
-    if (miId === esAutor && esAutor) {
-      // SOY EL DUEÑO en modo en-curso
-    } else if (miId === oferta.tasker_id) {
-      // ── SOY EL TASKER ASIGNADO ──
-      document.getElementById('of-form').style.display = 'none';
-      document.getElementById('of-enviada').style.display = 'none';
-      document.getElementById('panel-en-curso-tasker').style.display = 'block';
-      document.getElementById('btn-ir-chat-tasker').href = chatLink;
+    // Guardar IDs globales (necesarios para las funciones de review y chat)
+    window._ofertaActivaId = oferta.id;
+    window._taskerActivoId = oferta.tasker_id;
 
-      if (taskerConfirmo) {
-        document.getElementById('wrap-btn-termine').style.display = 'none';
-        document.getElementById('wrap-esperando-pago').style.display = 'block';
-      }
-      // Guardar ofertaId globalmente para usarlo en las funciones
-      window._ofertaActivaId = oferta.id;
-      window._taskerActivoId = oferta.tasker_id;
-
-      // Si la tarea ya está terminada, mostrar banner de review para el tasker
-      if (tareaData?.estado === 'terminada') {
-        document.getElementById('wrap-btn-termine').style.display = 'none';
-        document.getElementById('wrap-esperando-pago').style.display = 'none';
-        // Chequear si el tasker ya dejó review
-        const { data: rvExist } = await db.from('reviews')
-          .select('id').eq('tarea_id', TAREA_ID).eq('autor_id', miId).maybeSingle();
-        const yaReviewo = !!rvExist || tareaData?.review_tasker;
-        mostrarBannerReviewTasker(yaReviewo, autorId);
-      }
-
-    } else {
-      // SOY UN VISITANTE — mostrar quién tiene la tarea
-      const infoEl = document.getElementById('asignada-info');
-      if (infoEl) {
-        infoEl.innerHTML = `Asignada a <a href="perfil.html?id=${oferta.tasker_id}" style="color:var(--verde-o);font-weight:900">${escH(nombre)}</a>`;
-      }
-    }
-
-    // ── SOY EL DUEÑO en modo en-curso o terminada ──
     if (esAutor) {
+      // ══ SOY EL DUEÑO ══
       document.getElementById('btn-cancelar-wrap').style.display = 'none';
       document.getElementById('panel-en-curso-autor').style.display = 'block';
       document.getElementById('btn-ir-chat-autor').href = chatLink;
-      window._ofertaActivaId = oferta.id;
-      window._taskerActivoId = oferta.tasker_id;
 
-      if (tareaData?.estado === 'terminada') {
-        // Tarea ya terminada: mostrar panel completado + botón review si no reseñó
+      if (estadoTarea === 'terminada') {
+        // Tarea ya finalizada: mostrar panel completado + opción de review
         const { data: rvExist } = await db.from('reviews')
           .select('id').eq('tarea_id', TAREA_ID).eq('autor_id', miId).maybeSingle();
         const yaReviewo = !!rvExist || tareaData?.review_cliente;
@@ -860,8 +827,43 @@ async function cargarInfoAsignado(tareaId, miId) {
                 ⭐ Dejar reseña al tasker
               </button>
             </div>`;
+
       } else if (taskerConfirmo) {
+        // Tasker confirmó que terminó → mostrar botón para que el dueño finalice
         document.getElementById('panel-confirmar-pago').style.display = 'block';
+
+      }
+      // else: tarea en-curso sin confirmación → muestra el panel verde de "en curso" con btn chat
+
+    } else if (miId === oferta.tasker_id) {
+      // ══ SOY EL TASKER ASIGNADO ══
+      document.getElementById('of-form').style.display = 'none';
+      document.getElementById('of-enviada').style.display = 'none';
+      document.getElementById('panel-en-curso-tasker').style.display = 'block';
+      document.getElementById('btn-ir-chat-tasker').href = chatLink;
+
+      if (estadoTarea === 'terminada') {
+        // Tarea finalizada: mostrar banner de review
+        document.getElementById('wrap-btn-termine').style.display = 'none';
+        document.getElementById('wrap-esperando-pago').style.display = 'none';
+        const { data: rvExist } = await db.from('reviews')
+          .select('id').eq('tarea_id', TAREA_ID).eq('autor_id', miId).maybeSingle();
+        const yaReviewo = !!rvExist || tareaData?.review_tasker;
+        mostrarBannerReviewTasker(yaReviewo, autorId);
+
+      } else if (taskerConfirmo) {
+        // Ya confirmó → ocultar botón y mostrar "esperando pago"
+        document.getElementById('wrap-btn-termine').style.display = 'none';
+        document.getElementById('wrap-esperando-pago').style.display = 'block';
+
+      }
+      // else: tarea en-curso sin confirmar → muestra botón "Confirmé que terminé"
+
+    } else {
+      // ══ SOY UN VISITANTE ══
+      const infoEl = document.getElementById('asignada-info');
+      if (infoEl) {
+        infoEl.innerHTML = `Asignada a <a href="perfil.html?id=${oferta.tasker_id}" style="color:var(--verde-o);font-weight:900">${escH(nombre)}</a>`;
       }
     }
 
