@@ -327,6 +327,12 @@ mapaListo = true;
   // 3. Cargar tareas inmediatamente (sin esperar GPS — Safari puede tardar)
   await cargarTareas();
 
+  // Detectar Safari Mac (sin GPS) y avisar proactivamente
+  const esSafariMac = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent) && !/iPhone|iPad/.test(navigator.userAgent);
+  if (esSafariMac) {
+    setTimeout(mostrarBannerSinGPS, 1500); // Dar tiempo a que cargue la UI
+  }
+
   // 4. Realtime
   iniciarRealtime();
 })();
@@ -385,18 +391,36 @@ function onGPSErrorFinal(err) {
   document.getElementById('loc-loading').classList.remove('show');
   console.warn('[ChambaYa] GPS falló definitivamente:', err.code, err.message);
 
+  const esSafariMac = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent) && !/iPhone|iPad/.test(navigator.userAgent);
+
+  if (esSafariMac) {
+    // Safari en Mac no tiene GPS — mostrar banner informativo en el mapa
+    mostrarBannerSinGPS();
+    return;
+  }
+
   if (err.code === 1) {
-    // Permiso denegado — mostrar instrucciones específicas para Safari
-    const esSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-    const msg = esSafari
-      ? '📍 Permiso denegado. Andá a Configuración → Privacidad → Localización → Safari Websites → Permitir.'
-      : '📍 Permiso denegado. Hacé clic en el candado de la URL → Ubicación → Permitir y recargá.';
-    showToast(msg);
+    showToast('📍 Permiso denegado. Habilitá la ubicación en la configuración del navegador.');
   } else if (err.code === 2) {
-    showToast('📍 No se pudo obtener tu ubicación. Verificá que el GPS esté activado en tu dispositivo.');
+    showToast('📍 No se pudo obtener tu ubicación. Verificá que el GPS esté activado.');
   } else {
     showToast('📍 Tiempo agotado. Intentá de nuevo tocando el ícono 📍 del mapa.');
   }
+}
+
+function mostrarBannerSinGPS() {
+  // Mostrar aviso no invasivo debajo de los filtros
+  if (document.getElementById('banner-sin-gps')) return;
+  const banner = document.createElement('div');
+  banner.id = 'banner-sin-gps';
+  banner.style.cssText = 'background:#FFF7ED;border-bottom:1.5px solid #FED7AA;padding:9px 16px;font-size:.78rem;font-weight:800;color:#92400E;display:flex;align-items:center;gap:8px;flex-shrink:0;';
+  banner.innerHTML = `
+    <span style="font-size:1rem">🖥️</span>
+    <span>Safari en Mac no soporta GPS. Para ver tareas cerca tuyo usá <strong>Chrome</strong> o abrí desde tu iPhone.</span>
+    <button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;font-size:1rem;cursor:pointer;color:#92400E;opacity:.6;padding:0">✕</button>`;
+  // Insertar después de los filtros
+  const filtros = document.querySelector('.exp-filtros');
+  if (filtros) filtros.insertAdjacentElement('afterend', banner);
 }
 
 let _watchId = null;
